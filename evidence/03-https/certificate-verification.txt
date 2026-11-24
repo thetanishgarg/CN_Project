@@ -1,0 +1,48 @@
+Server certificate extracted from frame 57 of 05-wireshark/full-flow.pcap (TLS 1.2 sends it in clear)
+Recorded on the team LAN 22 Nov 2026 21:21 IST; examined Tue Nov 24 16:07:20 IST 2026
+
+$ openssl x509 -in evidence/03-https/server-cert-from-capture.pem -noout -subject -issuer -dates -serial -ext subjectAltName,extendedKeyUsage,keyUsage,basicConstraints
+subject=C=IN, O=Team1, CN=app.team1.test
+issuer=C=IN, O=Team1, CN=Team1 Local CA
+notBefore=Nov 22 13:44:38 2026 GMT
+notAfter=Nov 22 13:44:38 2027 GMT
+serial=3E4AA18AFF7DAFC9E011FA756DF947D7476687BE
+X509v3 Basic Constraints: 
+    CA:FALSE
+X509v3 Key Usage: critical
+    Digital Signature, Key Encipherment
+X509v3 Extended Key Usage: 
+    TLS Web Server Authentication
+X509v3 Subject Alternative Name: 
+    DNS:app.team1.test, DNS:api.team1.test
+
+$ openssl verify -CAfile team1-ca.crt evidence/03-https/server-cert-from-capture.pem
+evidence/03-https/server-cert-from-capture.pem: OK
+
+$ openssl verify -CAfile team1-ca.crt -verify_hostname app.team1.test evidence/03-https/server-cert-from-capture.pem
+evidence/03-https/server-cert-from-capture.pem: OK
+
+$ openssl verify -CAfile team1-ca.crt -verify_hostname api.team1.test evidence/03-https/server-cert-from-capture.pem
+evidence/03-https/server-cert-from-capture.pem: OK
+
+$ openssl verify -CAfile team1-ca.crt -verify_hostname evil.team1.test evidence/03-https/server-cert-from-capture.pem
+C=IN, O=Team1, CN=app.team1.test
+error 62 at 0 depth lookup: hostname mismatch
+error evidence/03-https/server-cert-from-capture.pem: verification failed
+
+$ openssl verify -no-CAfile -no-CApath -no-CAstore evidence/03-https/server-cert-from-capture.pem
+C=IN, O=Team1, CN=app.team1.test
+error 20 at 0 depth lookup: unable to get local issuer certificate
+error evidence/03-https/server-cert-from-capture.pem: verification failed
+
+$ openssl x509 -in team1-ca.crt -noout -subject -dates -ext basicConstraints,keyUsage
+subject=C=IN, O=Team1, CN=Team1 Local CA
+notBefore=Oct  4 06:58:16 2026 GMT
+notAfter=Oct  1 06:58:16 2036 GMT
+X509v3 Basic Constraints: critical
+    CA:TRUE
+
+$ openssl x509 ... -text | grep Public-Key
+                Public-Key: (2048 bit)
+        Signature Algorithm: sha256WithRSAEncryption
+    Signature Algorithm: sha256WithRSAEncryption
