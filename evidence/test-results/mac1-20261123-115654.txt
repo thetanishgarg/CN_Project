@@ -1,0 +1,94 @@
+TEAM 1 - mac1 test run   Mon Nov 23 11:56:54 IST 2026
+domain team1.test | Mac1 10.128.139.224 | Mac2 10.128.139.225 | Mac3 10.128.139.70 | Mac4 10.128.139.68 | target 10.128.139.225
+
+== Role check ==
+  FAIL  this Mac is 10.128.139.225 but config.env says 10.128.139.224
+        fix: fix config.env (Mac 1 commits it), everyone git pull
+
+== Task A - private LAN ==
+        interface en0 | IPv4 10.128.139.225 | mask 255.255.255.0 | gateway 10.128.139.6 | MAC 7e:45:9b:f9:71:19
+  PASS  has a private IPv4 address on en0
+  PASS  ping Mac 1 (10.128.139.224)
+  PASS  ping Mac 3 (10.128.139.70)
+  PASS  ping Mac 4 (10.128.139.68)
+
+== Task B - DNS server on this Mac ==
+  FAIL  DNS server is not running
+        fix: sudo ./dns/start-dns.sh
+  PASS  this server answers app.team1.test -> 10.128.139.225 on its LAN IP
+  WARN  dns/dnsmasq.conf record differs from APP_TARGET_IP (cutover in progress?)
+  PASS  dns/dnsmasq.conf: local-ttl=30
+
+== Task B - DNS from this client ==
+        DNS servers on Wi-Fi: There aren't any DNS Servers set on Wi-Fi. 
+  FAIL  client DNS is not Mac 1
+        fix: sudo ./dns/set-client-dns.sh set
+  FAIL  backup DNS 10.128.139.68 not listed
+        fix: sudo ./dns/set-client-dns.sh set
+  FAIL  dig app.team1.test -> 'no answer' (expected 10.128.139.225)
+        fix: is dnsmasq running on Mac 1 / Mac 4?
+  FAIL  dig api.team1.test wrong
+  PASS  unknown name in team1.test -> NXDOMAIN
+  PASS  internet names still resolve (google.com forwarded)
+  FAIL  macOS resolver gives 'nothing'
+        fix: sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder
+
+== Ext A/B - both DNS servers ==
+  PASS  primary DNS Mac 1 answers 10.128.139.225
+  PASS  backup DNS Mac 4 answers 10.128.139.225 (same record -> failover works)
+  PASS  TTL is 30s on both servers (Ext B)
+
+== Task E - HTTPS by name, certificate validated (no -k) ==
+  FAIL  HTTPS request failed (curl exit 6)
+        fix: ./troubleshoot/diagnose.sh
+  FAIL  https://api.team1.test fails
+  WARN  HTTP/2 not negotiated
+  FAIL  HTTP/1.1 fails
+  WARN  forced TLS 1.2 failed
+  WARN  no X-Edge header
+        Mac 2: git pull && ./nginx-script.sh start
+
+== Task D - load balancing through the edge ==
+        X-Backend sequence: - - - - - - - -
+  FAIL  only A=0 B=0 answered
+        fix: is the other backend running?
+
+== Task F - HTTP caching through the edge ==
+  FAIL  no Cache-Control on /api/cache
+  FAIL  only 0/4 conditional requests returned 304
+        fix: ETag must be identical on both backends
+  WARN  /api/status is cacheable
+
+== Section 6.3 - failure behaviour (simulated, nothing is stopped) ==
+  PASS  wrong DNS server (8.8.8.8): name fails, but ping to the edge IP works
+  PASS  DNS pointing to wrong IP (10.128.139.224): connection refused (DNS is only a directory)
+  WARN  wrong-port test gave curl exit 6
+        one-backend-down and both-down (502) are tested on Mac 2 with a private test edge
+
+== Ext C - backends not reachable directly from a client ==
+  WARN  Mac 3:3001 is reachable directly - firewall not applied
+        Mac 3: sudo ./firewall/backend-firewall.sh apply  (WARN is expected before Ext C)
+  WARN  Mac 4:3002 is reachable directly - firewall not applied
+        Mac 4: sudo ./firewall/backend-firewall.sh apply  (WARN is expected before Ext C)
+
+== Ext E - standby edge on Mac 3 ==
+  WARN  standby edge not running
+        Mac 3: ./mac3-standby-edge.sh start   (needed only for Ext E)
+
+================ SUMMARY ================
+  13 passed   13 failed   9 warnings
+  Failed:
+   - this Mac is 10.128.139.225 but config.env says 10.128.139.224
+   - DNS server is not running
+   - client DNS is not Mac 1
+   - backup DNS 10.128.139.68 not listed
+   - dig app.team1.test -> 'no answer' (expected 10.128.139.225)
+   - dig api.team1.test wrong
+   - macOS resolver gives 'nothing'
+   - HTTPS request failed (curl exit 6)
+   - https://api.team1.test fails
+   - HTTP/1.1 fails
+   - only A=0 B=0 answered
+   - no Cache-Control on /api/cache
+   - only 0/4 conditional requests returned 304
+  (saved to evidence/test-results/mac1-20261123-115654.txt)

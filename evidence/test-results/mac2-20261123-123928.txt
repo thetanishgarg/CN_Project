@@ -1,0 +1,47 @@
+TEAM 1 - mac2 test run   Mon Nov 23 12:39:28 IST 2026
+domain team1.test | Mac1 10.128.139.224 | Mac2 10.128.139.225 | Mac3 10.128.139.70 | Mac4 10.128.139.68 | target 10.128.139.225
+
+== Role check ==
+  PASS  this Mac's IP 10.128.139.225 matches config.env
+
+== Task A - private LAN ==
+        interface en0 | IPv4 10.128.139.225 | mask 255.255.255.0 | gateway 10.128.139.6 | MAC 7e:45:9b:f9:71:19
+  PASS  has a private IPv4 address on en0
+  PASS  ping Mac 1 (10.128.139.224)
+  PASS  ping Mac 3 (10.128.139.70)
+  PASS  ping Mac 4 (10.128.139.68)
+
+== Task E - certificate ==
+  PASS  server cert is signed by Team1 Local CA (team1-ca.crt)
+  PASS  SAN covers app.team1.test and api.team1.test
+  PASS  extendedKeyUsage = serverAuth (required by Safari/Chrome)
+  PASS  valid for at least 30 more days (Nov 22 13:44:38 2027 GMT)
+  PASS  private key matches certificate
+
+== Task D - nginx configuration ==
+  PASS  upstream pool = Mac 3:3001 + Mac 4:3002 (round-robin)
+  PASS  passive health check + retry on other backend configured (Ext D)
+  PASS  HTTP/2 enabled
+  PASS  X-Edge header configured
+
+== Task D/E - live edge on this Mac ==
+  PASS  nginx answers HTTPS on 10.128.139.225:443 with a cert that validates against our CA
+  PASS  TLS 1.2 handshake OK, certificate verified (ECDHE-RSA-AES256-GCM-SHA384)
+  PASS  TLS 1.3 handshake OK, certificate verified (TLS_AES_256_GCM_SHA384)
+  PASS  HTTP/2 via ALPN
+        X-Backend sequence: A B A B A B
+  PASS  round-robin across A and B
+  PASS  api.team1.test served too
+
+== Ext C - the edge CAN reach both backends directly ==
+  PASS  Mac 2 -> Backend A (10.128.139.70:3001) OK (allowed by firewall)
+  PASS  Mac 2 -> Backend B (10.128.139.68:3002) OK (allowed by firewall)
+
+== Ext D + 6.3 - failover and 502 (private test edge on port 18443) ==
+  PASS  Backend A dead: 6/6 requests still 200, all served by B (retry + passive health check)
+  PASS  both backends dead: TLS still works, nginx returns 502 Bad Gateway
+
+================ SUMMARY ================
+  24 passed   0 failed   0 warnings
+  ALL REQUIRED CHECKS PASSED
+  (saved to evidence/test-results/mac2-20261123-123928.txt)
