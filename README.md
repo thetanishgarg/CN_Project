@@ -134,22 +134,33 @@ and explains how to rebuild the document with `evidence/build/build.sh`.
 ## Repository layout
 
 ```
+README.md               you are here
 config.env              addresses, ports and TTL shared by every script
-backend/backend.py              the backend service (run twice: A on 3001, B on 3002)
-edge/nginx-script.sh         generates and runs the nginx edge (primary or standby)
-demo.sh                 one entry point for all four Macs
+demo.sh                 one entry point for all four Macs (ready, check, steps 1-10, cleanup)
 setup.sh                Phase 1 per-Mac setup
-mac2-*.sh               Mac 2: certificates, HA demo, edge watcher
-edge/mac3-standby-edge.sh    Mac 3: standby edge
-mac4-*.sh               Mac 4: backend B, backup DNS, client setup, firewall, capture
-dns/                    dnsmasq generation, client DNS, TTL, backup and cutover demos
-firewall/               pf anchor for backend isolation
+team1-ca.crt            the team CA certificate (public; clients must trust it)
+Makefile                make check | test-help | evidence
+
+backend/                the service and how to run it
+  backend.py            one program, started twice: A on 3001, B on 3002
+  mac4-backend-b.sh     runs Backend B on Mac 4
+edge/                   the HTTPS edge and everything that feeds it
+  nginx-script.sh       generates and runs nginx as primary or standby edge
+  mac2-certs.sh         creates the CA and the server certificate
+  mac2-export-certs.sh, mac2-import-certs.sh   move the certificate to the standby edge
+  mac3-standby-edge.sh  standby edge helper (Ext E)
+  mac2-ha-demo.sh, mac2-edge-watch.sh          failover demo and cutover watcher
+dns/                    dnsmasq generation, client DNS, TTL, backup DNS and cutover demos
+firewall/               pf anchor that isolates the backends (Ext C)
+client/                 client-side tools: CA trust, failure demos, capture, DNS restore
 tests/                  one automated test script per Mac
 troubleshoot/           diagnose.sh and the fault runbook
+docs/                   architecture, demo script, Phase 2 report, edge failover guide, viva notes
 evidence/               recorded evidence, the evidence document and its build scripts
 report/                 final report (LaTeX and PDF) and presentation
-team1-ca.crt            the team CA certificate (public; clients must trust it)
 ```
+
+Everything is run from the repository root, for example `./edge/nginx-script.sh start`.
 
 ## More documentation
 
@@ -160,4 +171,9 @@ team1-ca.crt            the team CA certificate (public; clients must trust it)
 | [docs/edge-failover-and-cutover.md](docs/edge-failover-and-cutover.md) | Ext D and Ext E: how failover and cutover work |
 | [docs/phase2-report.md](docs/phase2-report.md) | Phase 2 results and learning summaries |
 | [docs/revision-notes.html](docs/revision-notes.html) | Revision notes for the viva |
+| [troubleshoot/RUNBOOK.md](troubleshoot/RUNBOOK.md) | Fault table and diagnostic commands |
 | [report/report.pdf](report/report.pdf) | Final report |
+
+The final report and the presentation were written before the folders were
+reorganised, so they refer to scripts by their old root-level paths. Every
+script name is unchanged; only its folder is new.
