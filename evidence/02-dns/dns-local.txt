@@ -1,0 +1,69 @@
+SINGLE-MAC RUN   Tue Nov 24 16:08:07 IST 2026   host Darwin 27.2.0 arm64
+dnsmasq with the same directives start-dns.sh generates, on 127.0.0.1:5300
+----------------------------------------------------------------
+
+$ grep -vE 'pid-file|keep-in' p.conf
+listen-address=127.0.0.1
+bind-interfaces
+port=5300
+address=/app.team1.test/10.128.139.225
+address=/api.team1.test/10.128.139.225
+local-ttl=30
+local=/team1.test/
+local=/test/
+server=8.8.8.8
+server=8.8.4.4
+no-resolv
+no-hosts
+log-queries
+log-facility=-
+
+$ dig +time=2 +tries=1 @127.0.0.1 -p 5300 app.team1.test
+
+; <<>> DiG 9.10.6 <<>> +time=2 +tries=1 @127.0.0.1 -p 5300 app.team1.test
+; (1 server found)
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 2867
+;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 1232
+;; QUESTION SECTION:
+;app.team1.test.			IN	A
+
+;; ANSWER SECTION:
+app.team1.test.		30	IN	A	10.128.139.225
+
+;; Query time: 0 msec
+;; SERVER: 127.0.0.1#5300(127.0.0.1)
+;; WHEN: Tue Nov 24 16:08:07 IST 2026
+;; MSG SIZE  rcvd: 59
+
+
+$ dig +time=2 +tries=1 @127.0.0.1 -p 5300 +short api.team1.test
+10.128.139.225
+
+$ dig +time=2 +tries=1 @127.0.0.1 -p 5300 nosuch.team1.test | grep -E 'status:|flags:'
+;; ->>HEADER<<- opcode: QUERY, status: NXDOMAIN, id: 44464
+;; flags: qr rd ra; QUERY: 1, ANSWER: 0, AUTHORITY: 0, ADDITIONAL: 1
+; EDNS: version: 0, flags:; udp: 1232
+
+$ dig +time=2 +tries=1 @127.0.0.1 -p 5300 google.com A | grep -E 'status:|IN.A' | head -3
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 57151
+;google.com.			IN	A
+google.com.		193	IN	A	192.178.158.138
+
+$ dig +time=2 +tries=1 @127.0.0.1 -p 5300 +tcp +short app.team1.test
+10.128.139.225
+
+dnsmasq query log:
+  dnsmasq[20308]: using only locally-known addresses for team1.test
+  dnsmasq[20308]: query[A] app.team1.test from 127.0.0.1
+  dnsmasq[20308]: config app.team1.test is 10.128.139.225
+  dnsmasq[20308]: query[A] api.team1.test from 127.0.0.1
+  dnsmasq[20308]: config api.team1.test is 10.128.139.225
+  dnsmasq[20308]: query[A] nosuch.team1.test from 127.0.0.1
+  dnsmasq[20308]: config nosuch.team1.test is NXDOMAIN
+  dnsmasq[20324]: query[A] app.team1.test from 127.0.0.1
+  dnsmasq[20324]: config app.team1.test is 10.128.139.225

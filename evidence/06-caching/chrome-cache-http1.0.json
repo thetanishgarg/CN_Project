@@ -1,0 +1,50 @@
+{
+  "recorded": "Tue Nov 24 2026 16:14:14 GMT+0530 (India Standard Time)",
+  "browser": "Chrome/158.0.8127.38",
+  "url": "http://127.0.0.1:3002/api/cache",
+  "httpVersion": "1.0",
+  "scope": "single Mac, direct to backend.py over plain HTTP (not through the HTTPS edge)",
+  "rows": [
+    {
+      "step": "1. First visit",
+      "reachedServer": true,
+      "wireStatus": 200,
+      "fromDiskCache": false,
+      "fromMemoryCache": false,
+      "ifNoneMatch": null,
+      "bytesOnWire": 223
+    },
+    {
+      "step": "2. Visit again within 60 s",
+      "reachedServer": false,
+      "wireStatus": null,
+      "fromDiskCache": true,
+      "fromMemoryCache": false,
+      "ifNoneMatch": null,
+      "bytesOnWire": 0
+    },
+    {
+      "step": "3. Normal reload",
+      "reachedServer": true,
+      "wireStatus": 200,
+      "fromDiskCache": false,
+      "fromMemoryCache": false,
+      "ifNoneMatch": null,
+      "bytesOnWire": 223
+    },
+    {
+      "step": "4. Hard reload (cache bypassed)",
+      "reachedServer": true,
+      "wireStatus": 200,
+      "fromDiskCache": false,
+      "fromMemoryCache": false,
+      "ifNoneMatch": null,
+      "bytesOnWire": 223
+    }
+  ],
+  "backendSaw": [
+    "[B] \"GET /api/cache HTTP/1.1\" 200 -",
+    "[B] \"GET /api/cache HTTP/1.1\" 200 -",
+    "[B] \"GET /api/cache HTTP/1.1\" 200 -"
+  ]
+}

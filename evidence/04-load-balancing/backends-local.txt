@@ -1,0 +1,62 @@
+SINGLE-MAC RUN   Tue Nov 24 16:08:06 IST 2026   host Darwin 27.2.0 arm64
+Both backend.py processes, real HTTP requests over loopback
+----------------------------------------------------------------
+
+$ curl -si http://127.0.0.1:3001/api/status
+HTTP/1.0 200 OK
+Server: BaseHTTP Python/3.15.2
+Date: Tue, 24 Nov 2026 10:38:06 GMT
+Content-Type: application/json
+Content-Length: 38
+X-Backend: A
+Cache-Control: no-store
+
+{
+  "backend": "A",
+  "status": "ok"
+}
+$ curl -si http://127.0.0.1:3002/api/status
+HTTP/1.0 200 OK
+Server: BaseHTTP Python/3.15.2
+Date: Tue, 24 Nov 2026 10:38:06 GMT
+Content-Type: application/json
+Content-Length: 38
+X-Backend: B
+Cache-Control: no-store
+
+{
+  "backend": "B",
+  "status": "ok"
+}
+$ curl -si http://127.0.0.1:3002/
+HTTP/1.0 200 OK
+Server: BaseHTTP Python/3.15.2
+Date: Tue, 24 Nov 2026 10:38:06 GMT
+Content-Type: application/json
+Content-Length: 80
+X-Backend: B
+Cache-Control: max-age=60
+ETag: "63841ff20967e47bb9dcbcf98042baa6"
+
+{
+  "service": "Computer Networks Phase 1",
+  "backend": "B",
+  "status": "ok"
+}
+$ curl -si http://127.0.0.1:3002/nope
+HTTP/1.0 404 Not Found
+Server: BaseHTTP Python/3.15.2
+Date: Tue, 24 Nov 2026 10:38:06 GMT
+Content-Type: application/json
+Content-Length: 45
+X-Backend: B
+Cache-Control: no-store
+
+{
+  "error": "Not Found",
+  "path": "/nope"
+}
+$ lsof -nP -iTCP:3001 -iTCP:3002 -sTCP:LISTEN | awk '{print $1, $2, $5, $8, $9, $10}'
+COMMAND PID TYPE NODE NAME 
+Python 20276 IPv4 TCP *:3001 (LISTEN)
+Python 20277 IPv4 TCP *:3002 (LISTEN)

@@ -1,0 +1,13 @@
+SINGLE-MAC RUN   Tue Nov 24 16:08:10 IST 2026   host Darwin 27.2.0 arm64
+Ext B mechanism: record changed on the server, dig sees it at once (TTL 30)
+----------------------------------------------------------------
+
+$ dig +time=2 +tries=1 @127.0.0.1 -p 5300 +noall +answer app.team1.test
+app.team1.test.		30	IN	A	10.128.139.225
+
+>>> restart with target 10.128.139.70
+
+$ dig +time=2 +tries=1 @127.0.0.1 -p 5300 +noall +answer app.team1.test
+app.team1.test.		30	IN	A	10.128.139.70
+
+Scope: the server side only. The client-cache side was recorded on the real LAN in 12-edge-cutover/.

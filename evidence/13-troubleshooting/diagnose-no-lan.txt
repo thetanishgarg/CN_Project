@@ -1,0 +1,35 @@
+SINGLE-MAC RUN   Tue Nov 24 16:08:12 IST 2026   host Darwin 27.2.0 arm64
+Ext F tool run with the team LAN absent (no fault was injected; DNS is genuinely unavailable)
+----------------------------------------------------------------
+
+$ ./troubleshoot/diagnose.sh
+
+============================================================
+  TEAM 1 — Layer-by-Layer Diagnostic
+  Target : app.team1.test
+  Time   : Tue Nov 24 16:08:12 IST 2026
+============================================================
+
+[ LAYER 1 ] DNS
+  Querying: app.team1.test ...
+  ✗ FAIL — No DNS answer for app.team1.test
+
+  DIAGNOSIS: DNS resolution failure.
+  Likely causes:
+    a) Your DNS is not set to Mac 1 (10.128.29.224) or Mac 4 (10.128.29.68)
+       Fix: sudo ./dns/set-client-dns.sh set
+    b) Both primary AND backup dnsmasq are down
+       Fix: Mac 1: sudo ./dns/start-dns.sh
+            Mac 4: sudo ./mac4-backup-dns.sh start
+    c) Stale /etc/resolv.conf pointing to wrong server
+       Fix: sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder
+
+  Current client DNS servers:
+There aren't any DNS Servers set on Wi-Fi.
+
+  Stale cache check (direct query to Mac 1):
+;; connection timed out; no servers could be reached
+  Mac 1 DNS unreachable
+
+  Stopping diagnosis at Layer 1.
+exit code 1

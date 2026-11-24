@@ -1,0 +1,23 @@
+SINGLE-MAC RUN   Tue Nov 24 16:08:11 IST 2026   host Darwin 27.2.0 arm64
+Section 6.3 failure signatures that need no second Mac
+----------------------------------------------------------------
+
+A. DNS has no such name -> curl exit 6, before any TCP
+curl: (6) Could not resolve host: nosuch.team1.invalid
+   curl exit code 6
+
+B. Port with nothing listening -> TCP refused, curl exit 7
+curl: (7) Failed to connect to 127.0.0.1 port 8443 after 0 ms: Couldn't connect to server
+   curl exit code 7
+
+C. Backend A killed -> its port refuses, B still answers
+curl: (7) Failed to connect to 127.0.0.1 port 3001 after 0 ms: Couldn't connect to server
+   A: curl exit code 7
+{
+  "backend": "B",
+  "status": "ok"
+}   B: curl exit code 0
+
+D. Plain HTTP spoken to a TLS client -> TLS error, curl exit 35
+curl: (35) LibreSSL/3.3.6: error:1404B42E:SSL routines:ST_CONNECT:tlsv1 alert protocol version
+   curl exit code 35

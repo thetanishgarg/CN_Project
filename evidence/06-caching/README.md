@@ -19,9 +19,9 @@ done | tee evidence/06-caching/02-conditional-304.txt
 curl -sI https://app.team1.test/api/status | grep -i cache-control \
   | tee evidence/06-caching/03-status-no-store.txt
 
-# 4. Same ETag on both backends
-echo "Backend A:"; curl -sI http://10.81.95.70:3001/api/cache | grep -i etag
-echo "Backend B:"; curl -sI http://10.81.95.68:3002/api/cache | grep -i etag
+# 4. Same ETag on both backends (first: source config.env)
+echo "Backend A:"; curl -sI http://$MAC3_IP:3001/api/cache | grep -i etag
+echo "Backend B:"; curl -sI http://$MAC4_IP:3002/api/cache | grep -i etag
 ```
 
 ## Chrome DevTools screenshots needed

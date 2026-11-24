@@ -18,7 +18,7 @@
 | 6 | **Expired / wrong TLS cert** | TLS handshake fails; curl shows "certificate has expired" or "hostname mismatch" | `openssl s_client -connect $MAC2_IP:443 -servername app.team1.test -CAfile team1-ca.crt` | Mac 2: `./mac2-certs.sh` → `./nginx-script.sh reload` |
 | 7 | **Backend A stopped** (Mac 3:3001 down) | Load balancing: only `X-Backend: B` in responses; no 502 (nginx retries to B) | `curl http://$MAC3_IP:3001/api/status` → "Connection refused" | Mac 3: `BACKEND_NAME=A BACKEND_PORT=3001 python3 backend.py` |
 | 8 | **Both backends stopped** | HTTP 502 from nginx; `X-Backend` header absent | `curl -I https://app.team1.test/api/status` → `HTTP/2 502` | Mac 3 + Mac 4: restart both backends |
-| 9 | **Firewall blocking edge** (pf rules on backend Mac) | nginx gets "Connection refused" upstream; 502 to client; direct test from Mac 2 to backend port times out | `nc -vz $MAC4_IP $BACKEND_B_PORT` from Mac 2 → timeout | `sudo ./mac4-ext-c-firewall.sh remove` (and Mac 3: `sudo ./firewall/backend-firewall.sh remove`) |
+| 9 | **Firewall blocking edge** (pf rules on backend Mac) | nginx's connect to the backend times out after 2 s (the rule is `block drop`, so nothing is refused); the other backend answers, or 502 if both are blocked; a direct test from Mac 2 to the backend port times out | `nc -vz $MAC4_IP $BACKEND_B_PORT` from Mac 2 → timeout | `sudo ./mac4-ext-c-firewall.sh remove` (and Mac 3: `sudo ./firewall/backend-firewall.sh remove`) |
 | 10 | **Wrong port** (client connects to :8080 or :80) | "Connection refused" or "ECONNREFUSED" immediately | `nc -vz $MAC2_IP 8080` → refused | Use correct port 443: `curl https://app.team1.test/api/status` |
 | 11 | **Backup DNS down (Ext A)** when primary also fails | Full DNS outage; both servers unreachable | `dig @$MAC1_IP app.team1.test` and `dig @$MAC4_IP app.team1.test` both timeout | Mac 4: `sudo ./mac4-backup-dns.sh start` |
 | 12 | **Stale DNS cache** | Correct DNS servers but old IP cached; curl goes to previous edge | `sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder` then re-dig | Flush cache (see command) · Set TTL=30s prevents long stale windows |
@@ -31,7 +31,7 @@
 Client            Mac 1 (DNS)         Mac 2 (nginx)      Mac 3 / Mac 4
   |                                                       (Backend A/B)
   |─── dig app.team1.test A ──────>|
-  |<── answer: 10.81.95.225 ───────|
+  |<── answer: $MAC2_IP ───────|
   |                                                       
   |─── TCP SYN ────────────────────────────────────>:443 |
   |<── SYN-ACK ───────────────────────────────────────── |
@@ -89,23 +89,25 @@ sudo ./mac4-ext-c-firewall.sh apply
 
 ## Quick Reference — Key Diagnostic Commands
 
+Run `source config.env` first: the commands below use its variables instead of fixed addresses.
+
 ```bash
 # DNS layer
 dig app.team1.test                             # resolution + server used
-dig +short @10.202.54.224 app.team1.test       # direct query to Mac 1
-dig +short @10.81.95.68  app.team1.test        # direct query to Mac 4 (backup)
+dig +short @$MAC1_IP app.team1.test       # direct query to Mac 1
+dig +short @$MAC4_IP  app.team1.test        # direct query to Mac 4 (backup)
 scutil --dns | head -20                         # macOS resolver config
 networksetup -getdnsservers Wi-Fi               # which DNS servers are set
 
 # IP layer
-ping -c 3 10.81.95.225                         # reach nginx edge?
+ping -c 3 $MAC2_IP                         # reach nginx edge?
 
 # TCP layer
-nc -vz 10.81.95.225 443                        # port 443 open?
-nc -vz 10.81.95.68  3002                       # backend B direct?
+nc -vz $MAC2_IP 443                        # port 443 open?
+nc -vz $MAC4_IP  3002                       # backend B direct?
 
 # TLS layer
-openssl s_client -connect 10.81.95.225:443 \
+openssl s_client -connect $MAC2_IP:443 \
     -servername app.team1.test \
     -CAfile team1-ca.crt                       # cert valid? CN? expiry?
 
@@ -114,7 +116,7 @@ curl -sI --cacert team1-ca.crt https://app.team1.test/api/status
 curl -s  --cacert team1-ca.crt https://app.team1.test/api/status
 
 # Firewall
-sudo pfctl -a team1-backend -sr               # show our pf anchor
+sudo pfctl -a com.apple/team1-backend -sr               # show our pf anchor
 sudo pfctl -si                                # overall pf status
 
 # Cache

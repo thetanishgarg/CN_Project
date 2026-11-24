@@ -1,0 +1,40 @@
+$ tshark -O dns  (frame: response)
+Frame 3: Packet, 90 bytes on wire (720 bits), 90 bytes captured (720 bits)
+Ethernet II, Src: 5e:a4:d1:e3:8a:a0 (5e:a4:d1:e3:8a:a0), Dst: 22:dc:38:f6:77:a1 (22:dc:38:f6:77:a1)
+Internet Protocol Version 4, Src: 10.202.54.224, Dst: 10.202.54.68
+User Datagram Protocol, Src Port: 53, Dst Port: 55917
+Domain Name System (response)
+    Transaction ID: 0x5690
+    Flags: 0x8580 Standard query response, No error
+        1... .... .... .... = Response: Message is a response
+        .000 0... .... .... = Opcode: Standard query (0)
+        .... .1.. .... .... = Authoritative: Server is an authority for domain
+        .... ..0. .... .... = Truncated: Message is not truncated
+        .... ...1 .... .... = Recursion desired: Do query recursively
+        .... .... 1... .... = Recursion available: Server can do recursive queries
+        .... .... .0.. .... = Z: reserved (0)
+        .... .... ..0. .... = Answer authenticated: Answer/authority portion was not authenticated by the server
+        .... .... ...0 .... = Non-authenticated data: Unacceptable
+        .... .... .... 0000 = Reply code: No error (0)
+    Questions: 1
+    Answer RRs: 1
+    Authority RRs: 0
+    Additional RRs: 0
+    Queries
+        app.team1.test: type A, class IN
+            Name: app.team1.test
+            [Name Length: 14]
+            [Label Count: 3]
+            Type: A (1) (Host Address)
+            Class: IN (0x0001)
+    Answers
+        app.team1.test: type A, class IN, addr 10.202.54.225
+            Name: app.team1.test
+            Type: A (1) (Host Address)
+            Class: IN (0x0001)
+            Time to live: 30 (30 seconds)
+            Data length: 4
+            Address: 10.202.54.225
+    [Request In: 1]
+    [Time: 158.769000 milliseconds]
+
