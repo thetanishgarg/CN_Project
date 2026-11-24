@@ -1,0 +1,12 @@
+# Keep shell scripts LF so they run on every Mac, and tell GitHub what is generated or binary.
+*.sh            text eol=lf
+*.py            text eol=lf
+*.pcap          binary
+*.pdf           binary
+*.pptx          binary
+*.png           binary
+evidence/EVIDENCE.html          linguist-generated
+evidence/MANIFEST.sha256        linguist-generated
+evidence/screenshots/**         linguist-generated
+docs/revision-notes.html        linguist-documentation
+evidence/**                     linguist-documentation
