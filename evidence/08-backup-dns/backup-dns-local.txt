@@ -1,0 +1,30 @@
+SINGLE-MAC RUN   Tue Nov 24 16:08:07 IST 2026   host Darwin 27.2.0 arm64
+Ext A mechanism: primary (:5300) killed, backup (:5301) has the same record
+----------------------------------------------------------------
+
+$ dig +time=2 +tries=1 @127.0.0.1 -p 5300 app.team1.test | grep -E 'status:|IN.A|SERVER'
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 43419
+;app.team1.test.			IN	A
+app.team1.test.		30	IN	A	10.128.139.225
+;; SERVER: 127.0.0.1#5300(127.0.0.1)
+
+$ dig +time=2 +tries=1 @127.0.0.1 -p 5301 app.team1.test | grep -E 'status:|IN.A|SERVER'
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 8528
+;app.team1.test.			IN	A
+app.team1.test.		30	IN	A	10.128.139.225
+;; SERVER: 127.0.0.1#5301(127.0.0.1)
+
+>>> kill primary dnsmasq (pid 20308)
+
+$ dig +time=2 +tries=1 @127.0.0.1 -p 5300 app.team1.test | tail -2
+;; global options: +cmd
+;; connection timed out; no servers could be reached
+
+$ dig +time=2 +tries=1 @127.0.0.1 -p 5301 app.team1.test | grep -E 'status:|IN.A|SERVER'
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 25969
+;app.team1.test.			IN	A
+app.team1.test.		30	IN	A	10.128.139.225
+;; SERVER: 127.0.0.1#5301(127.0.0.1)
+
+Scope: proves identical records and independent processes. Automatic switch-over by the macOS
+resolver needs two hosts on port 53 and is not shown here.
