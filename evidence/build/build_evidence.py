@@ -216,7 +216,7 @@ cl = 'evidence/06-caching/caching-local.txt'
 a(secn('s-f', 'Task F: HTTP caching', 'Phase 1') + claim('A client can reuse a response for 60 seconds, then revalidate it for free, whichever backend answers.', 'Conditional requests through the edge, the same ETag on both backends, and what Chrome itself did.')
   + pane('evidence/06-caching/caching-recorded.txt', 4, None, LAN, 'Through the HTTPS edge: 4 of 4 conditional requests answered 304.')
   + pane(cl, 5, find(cl, 'Wrong ETag') + 1, ONE, 'Both backends produce the same ETag, so a tag from A is valid at B. A wrong ETag correctly gets the full body.', hl=('ETag:',))
-  + table(['Step in real Chrome', 'HTTP/1.1 reply (as behind the edge)', 'HTTP/1.0 reply (backend.py directly)'], [[h(x['step']), ccell(x), ccell(y)] for x, y in zip(cc11['rows'], cc10['rows'])])
+  + table(['Step in real Chrome', 'HTTP/1.1 reply (as behind the edge)', 'HTTP/1.0 reply (backend/backend.py directly)'], [[h(x['step']), ccell(x), ccell(y)] for x, y in zip(cc11['rows'], cc10['rows'])])
   + f'<p class="small">{h(cc11["browser"])}, recorded through the DevTools protocol on one Mac over plain HTTP. Files: <code>chrome-cache-http1.1.json</code>, <code>chrome-cache-http1.0.json</code>.</p>'
   + '<p class="note">Finding: Chrome did not revalidate an HTTP/1.0 response, and Python&rsquo;s server speaks HTTP/1.0. Behind nginx the browser receives HTTP/2, so revalidation works. To show 304 in a browser, open the site through the edge, not the backend port.</p>'
   + img('evidence/screenshots/chrome-api-cache.png', 'Screenshot of real Google Chrome on /api/cache.') + '</section>')

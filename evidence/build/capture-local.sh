@@ -10,12 +10,12 @@ for p in 3001 3002 5300 5301; do lsof -nP -iTCP:$p -sTCP:LISTEN >/dev/null 2>&1 
 hdr() { echo "SINGLE-MAC RUN   $(date)   host $(uname -srm)"; echo "$1"; echo "----------------------------------------------------------------"; }
 run() { echo; echo "\$ $*"; eval "$*" 2>&1; }
 
-BACKEND_NAME=A BACKEND_PORT=3001 python3 -u backend.py >"$TMP/A.log" 2>&1 & PIDS+=($!)
-BACKEND_NAME=B BACKEND_PORT=3002 python3 -u backend.py >"$TMP/B.log" 2>&1 & PIDS+=($!)
+BACKEND_NAME=A BACKEND_PORT=3001 python3 -u backend/backend.py >"$TMP/A.log" 2>&1 & PIDS+=($!)
+BACKEND_NAME=B BACKEND_PORT=3002 python3 -u backend/backend.py >"$TMP/B.log" 2>&1 & PIDS+=($!)
 disown -a
 sleep 1.5
 
-{ hdr "Both backend.py processes, real HTTP requests over loopback"
+{ hdr "Both backend/backend.py processes, real HTTP requests over loopback"
   run "curl -si http://127.0.0.1:3001/api/status"
   run "curl -si http://127.0.0.1:3002/api/status"
   run "curl -si http://127.0.0.1:3002/"

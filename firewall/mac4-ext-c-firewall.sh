@@ -1,18 +1,18 @@
 #!/bin/bash
 # ============================================================
-#  mac4-ext-c-firewall.sh — Ext C: Apply / Remove / Verify
+#  firewall/mac4-ext-c-firewall.sh — Ext C: Apply / Remove / Verify
 #  firewall on Mac 4's Backend B port 3002
 #
 #  DELEGATES to firewall/backend-firewall.sh (Mac 3 owns it).
 #  Mac 4 must NOT edit that script per team contract.
 #
 #  Usage:
-#    sudo ./mac4-ext-c-firewall.sh apply    # lock port 3002
-#    sudo ./mac4-ext-c-firewall.sh verify   # test access rules
-#    sudo ./mac4-ext-c-firewall.sh remove   # restore after demo
+#    sudo ./firewall/mac4-ext-c-firewall.sh apply    # lock port 3002
+#    sudo ./firewall/mac4-ext-c-firewall.sh verify   # test access rules
+#    sudo ./firewall/mac4-ext-c-firewall.sh remove   # restore after demo
 # ============================================================
 set -e
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.."
 source ./config.env
 
 ACTION="${1:-apply}"
@@ -29,7 +29,7 @@ case "$ACTION" in
     echo "========================================================"
     sudo ./firewall/backend-firewall.sh apply "$BACKEND_B_PORT"
     echo ""
-    echo "✓ Firewall applied. Run: sudo ./mac4-ext-c-firewall.sh verify"
+    echo "✓ Firewall applied. Run: sudo ./firewall/mac4-ext-c-firewall.sh verify"
     ;;
 
   verify)

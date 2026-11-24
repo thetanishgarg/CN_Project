@@ -5,7 +5,8 @@
 # Output: ~/cn-phase1/edge/nginx/certs/app.<domain>.crt / .key   (used by nginx)
 #         ./team1-ca.crt   (copy of the CA cert -> every client must trust this)
 set -e
-source "$(dirname "$0")/config.env"
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+source "$ROOT/config.env"
 D="$HOME/cn-phase1/edge/nginx/certs"; mkdir -p "$D"; cd "$D"
 LEAF="app.$PROJECT_DOMAIN"
 
@@ -30,9 +31,9 @@ openssl x509 -req -in "$LEAF.csr" -CA team1-ca.crt -CAkey team1-ca.key -CAcreate
   -out "$LEAF.crt" -days 365 -sha256 -extfile "$LEAF.ext"
 chmod 600 team1-ca.key "$LEAF.key"
 
-cp team1-ca.crt "$OLDPWD/team1-ca.crt"
+cp team1-ca.crt "$ROOT/team1-ca.crt"
 echo
 openssl verify -CAfile team1-ca.crt "$LEAF.crt"
 openssl x509 -in "$LEAF.crt" -noout -subject -issuer -enddate -ext subjectAltName,extendedKeyUsage
 echo
-echo "Done. AirDrop team1-ca.crt (in the project folder) to Mac 1, 3, 4 if they don't trust it yet."
+echo "Done. AirDrop team1-ca.crt (in the repository root) to Mac 1, 3, 4 if they don't trust it yet."

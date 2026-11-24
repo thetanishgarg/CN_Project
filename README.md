@@ -54,16 +54,16 @@ Addresses are not hard-coded in the scripts. Every script reads
 |---|---|---|
 | Task A | All Macs on one private LAN | `evidence/01-lan/` |
 | Task B | Private DNS for `team1.test` | `dns/start-dns.sh`, `dns/set-client-dns.sh` |
-| Task C | Two backend services | `backend.py` |
-| Task D | Load balancing at the edge | `nginx-script.sh` |
-| Task E | HTTPS with our own CA | `mac2-certs.sh`, `mac4-client-setup.sh` |
-| Task F | HTTP caching (`Cache-Control`, `ETag`, `304`) | `backend.py` |
-| Task G | Packet capture of DNS, TCP and TLS | `mac4-task-g-capture.sh`, `demo.sh capture` |
-| Ext A | Backup DNS on Mac 4 | `mac4-backup-dns.sh`, `dns/backup-dns-demo.sh` |
+| Task C | Two backend services | `backend/backend.py` |
+| Task D | Load balancing at the edge | `edge/nginx-script.sh` |
+| Task E | HTTPS with our own CA | `edge/mac2-certs.sh`, `client/mac4-client-setup.sh` |
+| Task F | HTTP caching (`Cache-Control`, `ETag`, `304`) | `backend/backend.py` |
+| Task G | Packet capture of DNS, TCP and TLS | `client/mac4-task-g-capture.sh`, `demo.sh capture` |
+| Ext A | Backup DNS on Mac 4 | `dns/mac4-backup-dns.sh`, `dns/backup-dns-demo.sh` |
 | Ext B | 30 s TTL and resolver caching | `dns/ttl-demo.sh` |
-| Ext C | Backend isolation with the macOS packet filter | `firewall/backend-firewall.sh`, `mac4-ext-c-firewall.sh` |
-| Ext D | Backend failover without client errors | `nginx-script.sh`, `mac2-ha-demo.sh` |
-| Ext E | Standby edge and DNS cutover | `mac3-standby-edge.sh`, `dns/cutover-demo.sh`, `mac2-edge-watch.sh` |
+| Ext C | Backend isolation with the macOS packet filter | `firewall/backend-firewall.sh`, `firewall/mac4-ext-c-firewall.sh` |
+| Ext D | Backend failover without client errors | `edge/nginx-script.sh`, `edge/mac2-ha-demo.sh` |
+| Ext E | Standby edge and DNS cutover | `edge/mac3-standby-edge.sh`, `dns/cutover-demo.sh`, `edge/mac2-edge-watch.sh` |
 | Ext F | Layer-by-layer fault diagnosis | `troubleshoot/diagnose.sh`, `troubleshoot/RUNBOOK.md` |
 
 ## Getting started
@@ -89,8 +89,8 @@ cd CN_Project
 4. **Run the demonstration** step by step (`./demo.sh 1` to `./demo.sh 10`, plus `9a`, `9b`, `9c`, `9e` for Phase 2). Each step pauses where another Mac has to act and prints what to say.
 5. **Clean up** afterwards with `./demo.sh cleanup`.
 
-Certificates: `./mac2-certs.sh` on Mac 2 creates the CA and the server
-certificate. Clients trust the CA once with `./mac4-client-setup.sh team1-ca.crt`.
+Certificates: `./edge/mac2-certs.sh` on Mac 2 creates the CA and the server
+certificate. Clients trust the CA once with `./client/mac4-client-setup.sh team1-ca.crt`.
 The CA's private key never leaves Mac 2 and private keys are git-ignored.
 
 ## Testing
@@ -134,30 +134,46 @@ and explains how to rebuild the document with `evidence/build/build.sh`.
 ## Repository layout
 
 ```
+README.md               you are here
 config.env              addresses, ports and TTL shared by every script
-backend.py              the backend service (run twice: A on 3001, B on 3002)
-nginx-script.sh         generates and runs the nginx edge (primary or standby)
-demo.sh                 one entry point for all four Macs
+demo.sh                 one entry point for all four Macs (ready, check, steps 1-10, cleanup)
 setup.sh                Phase 1 per-Mac setup
-mac2-*.sh               Mac 2: certificates, HA demo, edge watcher
-mac3-standby-edge.sh    Mac 3: standby edge
-mac4-*.sh               Mac 4: backend B, backup DNS, client setup, firewall, capture
-dns/                    dnsmasq generation, client DNS, TTL, backup and cutover demos
-firewall/               pf anchor for backend isolation
+team1-ca.crt            the team CA certificate (public; clients must trust it)
+Makefile                make check | test-help | evidence
+
+backend/                the service and how to run it
+  backend.py            one program, started twice: A on 3001, B on 3002
+  mac4-backend-b.sh     runs Backend B on Mac 4
+edge/                   the HTTPS edge and everything that feeds it
+  nginx-script.sh       generates and runs nginx as primary or standby edge
+  mac2-certs.sh         creates the CA and the server certificate
+  mac2-export-certs.sh, mac2-import-certs.sh   move the certificate to the standby edge
+  mac3-standby-edge.sh  standby edge helper (Ext E)
+  mac2-ha-demo.sh, mac2-edge-watch.sh          failover demo and cutover watcher
+dns/                    dnsmasq generation, client DNS, TTL, backup DNS and cutover demos
+firewall/               pf anchor that isolates the backends (Ext C)
+client/                 client-side tools: CA trust, failure demos, capture, DNS restore
 tests/                  one automated test script per Mac
 troubleshoot/           diagnose.sh and the fault runbook
+docs/                   architecture, demo script, Phase 2 report, edge failover guide, viva notes
 evidence/               recorded evidence, the evidence document and its build scripts
 report/                 final report (LaTeX and PDF) and presentation
-team1-ca.crt            the team CA certificate (public; clients must trust it)
 ```
+
+Everything is run from the repository root, for example `./edge/nginx-script.sh start`.
 
 ## More documentation
 
 | File | Contents |
 |---|---|
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Topology, request flows, protocol layers, viva guide |
-| [DEMO-SCRIPT.md](DEMO-SCRIPT.md) | The 11 demonstration steps with commands |
-| [MAC2-PHASE2.md](MAC2-PHASE2.md) | Ext D and Ext E: how failover and cutover work |
-| [PHASE2-REPORT.md](PHASE2-REPORT.md) | Phase 2 results and learning summaries |
-| [REVISION-NOTES.html](REVISION-NOTES.html) | Revision notes for the viva |
+| [docs/architecture.md](docs/architecture.md) | Topology, request flows, protocol layers, viva guide |
+| [docs/demo-script.md](docs/demo-script.md) | The 11 demonstration steps with commands |
+| [docs/edge-failover-and-cutover.md](docs/edge-failover-and-cutover.md) | Ext D and Ext E: how failover and cutover work |
+| [docs/phase2-report.md](docs/phase2-report.md) | Phase 2 results and learning summaries |
+| [docs/revision-notes.html](docs/revision-notes.html) | Revision notes for the viva |
+| [troubleshoot/RUNBOOK.md](troubleshoot/RUNBOOK.md) | Fault table and diagnostic commands |
 | [report/report.pdf](report/report.pdf) | Final report |
+
+The final report and the presentation were written before the folders were
+reorganised, so they refer to scripts by their old root-level paths. Every
+script name is unchanged; only its folder is new.
