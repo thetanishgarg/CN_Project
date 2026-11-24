@@ -25,9 +25,9 @@ Removed files are still in git history (`git show <commit>^:<path>`).
 | test-mac1 and test-mac3 "passed" | `report.tex`, results table | No valid Mac 1 run and no Mac 3 run is saved |
 | test-mac4 final run 45/45 | `report.tex` | 45/45 was at 12:03; the final run is 44 passed, 0 failed, 1 warning |
 | Full ping matrix in `01-lan/` | `report.tex` | Not there; pings from Mac 2 and Mac 4 only |
-| `/` serves an HTML page | `report.tex`, Task C | `backend.py` returns JSON |
+| `/` serves an HTML page | `report.tex`, Task C | `backend/backend.py` returns JSON |
 | `Cache-Control: public, max-age=60` | `report.tex`, Task F | `max-age=60`, no `public` |
-| Upstream keepalive was removed | `report.tex`, Task D and challenges | No version of `nginx-script.sh` in git contains it |
+| Upstream keepalive was removed | `report.tex`, Task D and challenges | No version of `edge/nginx-script.sh` in git contains it |
 | Ext D is caching; `10-ha-failover` is Ext E | `PHASE2-REPORT.md` | Ext D is backend failover and `10-ha-failover` is its folder; `12-edge-cutover` is Ext E |
 | pf anchor `team1-backend` | `PHASE2-REPORT.md`, `RUNBOOK.md` | It is `com.apple/team1-backend`; the runbook's `pfctl -a team1-backend -sr` shows nothing |
 | A blocked edge gets "Connection refused" | `RUNBOOK.md` fault 9 | The rule is `block drop`, so it times out |

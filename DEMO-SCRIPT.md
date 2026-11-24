@@ -144,7 +144,7 @@ sleep 30 && sudo dscacheutil -flushcache && dig +short app.team1.test
 
 ```bash
 # Apply pf rules on Mac 4
-sudo ./mac4-ext-c-firewall.sh apply
+sudo ./firewall/mac4-ext-c-firewall.sh apply
 
 # From Mac 4 itself — show pf anchor
 sudo pfctl -a team1-backend -sr
@@ -158,7 +158,7 @@ nc -vz 10.202.54.68 3002        # from non-edge: timeout
 curl https://app.team1.test/api/status
 
 # Remove after demo
-sudo ./mac4-ext-c-firewall.sh remove
+sudo ./firewall/mac4-ext-c-firewall.sh remove
 ```
 
 **Evidence:** `evidence/11-service-isolation/`
@@ -170,7 +170,7 @@ sudo ./mac4-ext-c-firewall.sh remove
 
 ```bash
 # Mac 3 — start standby nginx
-sudo ./mac3-standby-edge.sh start
+sudo ./edge/mac3-standby-edge.sh start
 
 # Mac 1 — update APP_TARGET_IP to MAC3_IP, restart DNS
 # (Mac 1 edits config.env, then): sudo ./dns/start-dns.sh

@@ -60,9 +60,9 @@
 
 **What was done:**
 - Applied `firewall/backend-firewall.sh` (Mac 3's script) on Mac 4 for port 3002.
-- Used `mac4-ext-c-firewall.sh apply` → delegates without editing the shared script.
+- Used `firewall/mac4-ext-c-firewall.sh apply` → delegates without editing the shared script.
 - Verified: the edge (Mac 2) can reach `:3002`; any other host gets a silent drop, so its connection times out (`evidence/11-service-isolation/isolation-recorded.txt`).
-- Removed firewall after demo: `sudo ./mac4-ext-c-firewall.sh remove`.
+- Removed firewall after demo: `sudo ./firewall/mac4-ext-c-firewall.sh remove`.
 
 **pf anchor used:** `com.apple/team1-backend` (macOS only evaluates anchors under `com.apple/`)  
 **Rules:** allow from MAC2_IP, allow from STANDBY_EDGE_IP, block drop all others.
@@ -91,7 +91,7 @@
 ### Ext E — Standby Edge / Hot Cutover (Mac 3)
 
 **What was done:**
-- Mac 3 ran `mac3-standby-edge.sh` to bring up a second nginx instance.
+- Mac 3 ran `edge/mac3-standby-edge.sh` to bring up a second nginx instance.
 - Mac 1 updated `APP_TARGET_IP` → `MAC3_IP` and restarted DNS (TTL=30s, so switch propagated in ≤30 s).
 - Clients now reach Mac 3's nginx (same certs, same backends).
 - Cutover verified on 23 Nov: the DNS server changed at 12:12:40, the client's cache followed at 12:13:09 (29 s), and 84 of 84 samples in that window returned 200.

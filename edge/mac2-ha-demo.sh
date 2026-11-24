@@ -1,11 +1,11 @@
 #!/bin/bash
 # Ext D - High-availability failover demo (run on a CLIENT: Mac 1 or Mac 4, or on Mac 2)
 #
-#   ./mac2-ha-demo.sh demo     guided: baseline -> stop Backend A -> all served by B -> restart A -> A/B again
-#   ./mac2-ha-demo.sh watch    one request per second forever (leave it running on screen; Ctrl+C)
+#   ./edge/mac2-ha-demo.sh demo     guided: baseline -> stop Backend A -> all served by B -> restart A -> A/B again
+#   ./edge/mac2-ha-demo.sh watch    one request per second forever (leave it running on screen; Ctrl+C)
 #
 # Output of "demo" is saved to evidence/10-ha-failover/
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.."
 source ./config.env
 URL="https://app.$PROJECT_DOMAIN"; [ "$HTTPS_PORT" != "443" ] && URL="$URL:$HTTPS_PORT"
 # Real certificate validation against our CA (no -k)
@@ -39,7 +39,7 @@ demo)
   echo "2) Backend A DOWN - nginx gets 'connection refused', retries the same request on B"
   echo "   (proxy_next_upstream) and marks A down for 10 s (max_fails=1 fail_timeout=10s)"
   burst 8
-  pause "Mac 3: restart Backend A  (BACKEND_NAME=A BACKEND_PORT=3001 python3 backend.py)"
+  pause "Mac 3: restart Backend A  (BACKEND_NAME=A BACKEND_PORT=3001 python3 backend/backend.py)"
   echo "3) Waiting 11 s for A's fail_timeout to expire..."; sleep 11
   echo "   Backend A back - nginx retries it, it answers, load balancing resumes"
   burst 6

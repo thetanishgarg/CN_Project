@@ -1,7 +1,7 @@
 #!/bin/bash
 # Ext E - DNS-based edge cutover watcher (run on a CLIENT: Mac 1 or Mac 4)
 #
-#   ./mac2-edge-watch.sh          every 2 s show: what the DNS server says now,
+#   ./edge/mac2-edge-watch.sh          every 2 s show: what the DNS server says now,
 #                                 what THIS Mac's cache still uses, and which edge answered
 #
 # Run it, then Mac 1 does:  ./dns/cutover-demo.sh cutover
@@ -9,7 +9,7 @@
 # going to the old edge (X-Edge: mac2-primary) until its cached answer's TTL (30 s)
 # runs out, then X-Edge: mac3-standby.  ./client flush makes it switch at once.
 # Output saved to evidence/12-edge-cutover/
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.."
 source ./config.env
 APP="app.$PROJECT_DOMAIN"
 URL="https://$APP"; [ "$HTTPS_PORT" != "443" ] && URL="$URL:$HTTPS_PORT"

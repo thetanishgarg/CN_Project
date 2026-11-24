@@ -16,13 +16,13 @@ Start all services first (backends, Mac 2 nginx, Mac 1 DNS, Mac 4 backup DNS, cl
 The scripts never stop or change anything on another Mac. Each run is saved to `evidence/test-results/<mac>-<time>.txt` (commit these as evidence).
 
 **Full Phase 2 check:**
-1. Mac 3 runs `sudo ./firewall/backend-firewall.sh apply` and Mac 4 runs `sudo ./mac4-ext-c-firewall.sh apply`.
-2. Mac 3 runs `./mac3-standby-edge.sh start`.
-3. All 4 scripts run again. Everything should pass with no WARNs (Mac 4 also needs its `.pcap` from `sudo ./mac4-task-g-capture.sh`).
+1. Mac 3 runs `sudo ./firewall/backend-firewall.sh apply` and Mac 4 runs `sudo ./firewall/mac4-ext-c-firewall.sh apply`.
+2. Mac 3 runs `./edge/mac3-standby-edge.sh start`.
+3. All 4 scripts run again. Everything should pass with no WARNs (Mac 4 also needs its `.pcap` from `sudo ./client/mac4-task-g-capture.sh`).
 
 The live "watch it happen" demos still use their own scripts:
 - Ext A: `dns/backup-dns-demo.sh`
 - Ext B: `dns/ttl-demo.sh`
-- Ext D: `./mac2-ha-demo.sh demo`
-- Ext E: `./mac2-edge-watch.sh` together with `dns/cutover-demo.sh`
+- Ext D: `./edge/mac2-ha-demo.sh demo`
+- Ext E: `./edge/mac2-edge-watch.sh` together with `dns/cutover-demo.sh`
 - Ext F: `troubleshoot/diagnose.sh`

@@ -1,18 +1,18 @@
 #!/bin/bash
 # ============================================================
-#  mac4-backup-dns.sh — Ext A: Run Backup DNS on Mac 4
+#  dns/mac4-backup-dns.sh — Ext A: Run Backup DNS on Mac 4
 #
 #  Uses Mac 1's dns/start-dns.sh unchanged (team contract).
 #  Just installs dnsmasq if missing, then delegates to the
 #  shared script.
 #
 #  Usage:
-#    sudo ./mac4-backup-dns.sh           # start backup DNS
-#    sudo ./mac4-backup-dns.sh stop      # stop it
-#    ./mac4-backup-dns.sh status         # check if running
+#    sudo ./dns/mac4-backup-dns.sh           # start backup DNS
+#    sudo ./dns/mac4-backup-dns.sh stop      # stop it
+#    ./dns/mac4-backup-dns.sh status         # check if running
 # ============================================================
 set -e
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.."
 source ./config.env
 
 ACTION="${1:-start}"

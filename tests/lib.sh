@@ -79,7 +79,7 @@ backend_tests() {  # $1 = A|B  $2 = port
   local name=$1 port=$2 base="http://127.0.0.1:$2"
   section "Task C/F - Backend $name on port $port"
   if ! reach_tcp 127.0.0.1 "$port"; then
-    fail "Backend $name is not running on port $port" "BACKEND_NAME=$name BACKEND_PORT=$port python3 backend.py"; return; fi
+    fail "Backend $name is not running on port $port" "BACKEND_NAME=$name BACKEND_PORT=$port python3 backend/backend.py"; return; fi
   pass "Backend $name is listening on $port"
   if lsof -nP -iTCP:"$port" -sTCP:LISTEN 2>/dev/null | grep -q "127.0.0.1:$port"; then
     fail "bound to 127.0.0.1 only - other Macs cannot reach it" "bind 0.0.0.0"
@@ -127,13 +127,13 @@ client_tests() {
   a1=$(dig +short +time=2 +tries=1 $DNS1 "$APP" | grep -E '^[0-9.]+$' | tail -1); a4=$(dig +short +time=2 +tries=1 $DNS4 "$APP" | grep -E '^[0-9.]+$' | tail -1)
   t1=$(dig +noall +answer +time=2 +tries=1 $DNS1 "$APP" | awk '$4=="A"{print $2; exit}'); t4=$(dig +noall +answer +time=2 +tries=1 $DNS4 "$APP" | awk '$4=="A"{print $2; exit}')
   [ "$a1" = "$EXPECTED_TARGET" ] && pass "primary DNS Mac 1 answers $a1" || fail "primary DNS Mac 1 answers '${a1:-nothing}'" "Mac 1: sudo ./dns/start-dns.sh"
-  [ "$a4" = "$EXPECTED_TARGET" ] && pass "backup DNS Mac 4 answers $a4 (same record -> failover works)" || fail "backup DNS Mac 4 answers '${a4:-nothing}'" "Mac 4: sudo ./mac4-backup-dns.sh"
+  [ "$a4" = "$EXPECTED_TARGET" ] && pass "backup DNS Mac 4 answers $a4 (same record -> failover works)" || fail "backup DNS Mac 4 answers '${a4:-nothing}'" "Mac 4: sudo ./dns/mac4-backup-dns.sh"
   [ "$t1" = "$DNS_TTL" ] && [ "$t4" = "$DNS_TTL" ] && pass "TTL is ${DNS_TTL}s on both servers (Ext B)" || fail "TTL primary=${t1:-none} backup=${t4:-none} (expected $DNS_TTL)"
 
   section "Task E - HTTPS by name, certificate validated (no -k)"
   local out rc; out=$(c -v "$URL/api/status" 2>&1); rc=$?
   if [ $rc -eq 0 ] && echo "$out" | grep -qE "^< HTTP/[0-9.]+ 200"; then pass "curl $URL/api/status -> 200, certificate verify ok"
-  elif [ $rc -eq 60 ]; then fail "certificate not trusted by this Mac's curl" "./mac4-client-setup.sh team1-ca.crt"
+  elif [ $rc -eq 60 ]; then fail "certificate not trusted by this Mac's curl" "./client/mac4-client-setup.sh team1-ca.crt"
   else fail "HTTPS request failed (curl exit $rc)" "./troubleshoot/diagnose.sh"; fi
   echo "$out" | grep -E "subject:|issuer:" | sed 's/^\*/       /'
   [ "$(code "https://$API$P/api/status")" = 200 ] && pass "https://$API also valid (SAN covers api)" || fail "https://$API fails"
@@ -142,7 +142,7 @@ client_tests() {
   local tls12; tls12=$(c -o /dev/null -w '%{http_code}' --tlsv1.2 --tls-max 1.2 "$URL/" 2>/dev/null)
   [ "$tls12" = 200 ] && pass "TLS 1.2 handshake works (Certificate visible in Wireshark)" || warn "forced TLS 1.2 failed"
   local edge; edge=$(hdr X-Edge "$URL/api/status")
-  [ -n "$edge" ] && pass "served by edge: X-Edge: $edge" || warn "no X-Edge header" "Mac 2: git pull && ./nginx-script.sh start"
+  [ -n "$edge" ] && pass "served by edge: X-Edge: $edge" || warn "no X-Edge header" "Mac 2: git pull && ./edge/nginx-script.sh start"
 
   section "Task D - load balancing through the edge"
   local seq="" a=0 b=0 x round
@@ -189,5 +189,5 @@ client_tests() {
   local sh; sh=$(curl -s --max-time 5 "${CURL_X[@]}" --resolve "$APP:${HTTPS_PORT}:${TEST_STANDBY_IP:-$STANDBY_EDGE_IP}" -D - -o /dev/null "$URL/api/status" 2>/dev/null | tr -d '\r')
   if echo "$sh" | head -1 | grep -q " 200"; then
     echo "$sh" | grep -qi "x-edge: mac3-standby" && pass "standby edge answers with valid cert (X-Edge: mac3-standby)" || warn "standby answered but X-Edge is not mac3-standby"
-  else warn "standby edge not running" "Mac 3: ./mac3-standby-edge.sh start   (needed only for Ext E)"; fi
+  else warn "standby edge not running" "Mac 3: ./edge/mac3-standby-edge.sh start   (needed only for Ext E)"; fi
 }

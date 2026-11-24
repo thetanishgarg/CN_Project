@@ -1,29 +1,29 @@
 #!/bin/bash
-# mac3-standby-edge.sh
+# edge/mac3-standby-edge.sh
 # =============================================================================
 # Mac 3: Standby nginx Edge — Ext E setup helper
 #
 # Run AFTER:
 #   1. brew install nginx (once, if not already installed)
-#   2. Mac 2 runs mac2-export-certs.sh and AirDrops the .tgz to Mac 3
-#   3. This Mac runs:  ./mac2-import-certs.sh ~/Downloads/team1-edge-certs.tgz
+#   2. Mac 2 runs edge/mac2-export-certs.sh and AirDrops the .tgz to Mac 3
+#   3. This Mac runs:  ./edge/mac2-import-certs.sh ~/Downloads/team1-edge-certs.tgz
 #
 # USAGE
-#   ./mac3-standby-edge.sh start    # write config + start standby nginx
-#   ./mac3-standby-edge.sh stop     # stop standby nginx
-#   ./mac3-standby-edge.sh status   # is it running? is 443 free?
-#   ./mac3-standby-edge.sh precheck # verify cert + port availability before starting
+#   ./edge/mac3-standby-edge.sh start    # write config + start standby nginx
+#   ./edge/mac3-standby-edge.sh stop     # stop standby nginx
+#   ./edge/mac3-standby-edge.sh status   # is it running? is 443 free?
+#   ./edge/mac3-standby-edge.sh precheck # verify cert + port availability before starting
 #
-# This script is a thin wrapper around nginx-script.sh that:
+# This script is a thin wrapper around edge/nginx-script.sh that:
 #   • Checks port 443 is free before starting
-#   • Passes 'standby' so nginx-script.sh picks the right role/X-Edge header
+#   • Passes 'standby' so edge/nginx-script.sh picks the right role/X-Edge header
 #   • Prints clear instructions for the firewall exception needed (Ext C + Ext E coexist)
 # =============================================================================
 set -euo pipefail
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.."
 source ./config.env
 
-NGINX_SCRIPT="./nginx-script.sh"
+NGINX_SCRIPT="./edge/nginx-script.sh"
 
 check_port_443() {
     if lsof -nP -iTCP:443 -sTCP:LISTEN 2>/dev/null | grep -q .; then
@@ -40,8 +40,8 @@ check_certs() {
     local CRT="$N/certs/app.$PROJECT_DOMAIN.crt"
     if [ ! -f "$CRT" ]; then
         echo "ERROR: Certificate not found at $CRT"
-        echo "       Ask Mac 2 to run: ./mac2-export-certs.sh"
-        echo "       Then AirDrop the .tgz here and run: ./mac2-import-certs.sh <file>"
+        echo "       Ask Mac 2 to run: ./edge/mac2-export-certs.sh"
+        echo "       Then AirDrop the .tgz here and run: ./edge/mac2-import-certs.sh <file>"
         exit 1
     fi
     echo "✓ Certificate found: $CRT"

@@ -11,14 +11,14 @@
 # ============================================================
 
 set -e
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.."
 source ./config.env
 
 CA_CRT="${1:-ca.crt}"   # pass a path as $1 or put ca.crt in this directory
 
 if [ ! -f "$CA_CRT" ]; then
     echo "ERROR: $CA_CRT not found."
-    echo "Usage: ./mac4-client-setup.sh [path/to/ca.crt]"
+    echo "Usage: ./client/mac4-client-setup.sh [path/to/ca.crt]"
     echo "       (Wait for Mac 2 to send you ca.crt first)"
     exit 1
 fi

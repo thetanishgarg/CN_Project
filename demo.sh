@@ -63,7 +63,7 @@ esac
 # ---------------- service helpers ----------------
 start_backend() {  # name port
   if up 127.0.0.1 "$2"; then ok "Backend $1 already running on :$2"; return; fi
-  nohup env BACKEND_NAME="$1" BACKEND_PORT="$2" python3 -u backend.py >"$LOG/backend-$1.log" 2>&1 &
+  nohup env BACKEND_NAME="$1" BACKEND_PORT="$2" python3 -u backend/backend.py >"$LOG/backend-$1.log" 2>&1 &
   sleep 1; up 127.0.0.1 "$2" && ok "Backend $1 started on :$2 (log: logs/backend-$1.log)" || bad "Backend $1 failed - see logs/backend-$1.log"
 }
 stop_backend() { local p; p=$(lsof -tiTCP:"$1" -sTCP:LISTEN 2>/dev/null); [ -n "$p" ] && kill $p; sleep 0.5; }
@@ -83,7 +83,7 @@ client_ready() {
   sudo ./dns/set-client-dns.sh set >/dev/null 2>&1; flush
   ok "client DNS -> $MAC1_IP (primary) + $BACKUP_DNS_IP (backup)"
   local rc; curl -s -m 6 -o /dev/null "$URL/api/status"; rc=$?
-  if [ $rc -eq 60 ]; then say "  CA not trusted yet - installing it"; ./mac4-client-setup.sh team1-ca.crt >/dev/null && ok "CA trusted"; fi
+  if [ $rc -eq 60 ]; then say "  CA not trusted yet - installing it"; ./client/mac4-client-setup.sh team1-ca.crt >/dev/null && ok "CA trusted"; fi
 }
 
 # ---------------- ready / logs / cleanup ----------------
@@ -93,11 +93,11 @@ cmd_ready() {
   sudo -v || exit 1
   case $ROLE in
     mac1) dns_start; client_ready ;;
-    mac2) ./nginx-script.sh start >/dev/null && edge_ok "$MYIP" && ok "nginx edge serving https://$APP on $MYIP:$HTTPS_PORT" || bad "nginx not serving - run ./nginx-script.sh start" ;;
+    mac2) ./edge/nginx-script.sh start >/dev/null && edge_ok "$MYIP" && ok "nginx edge serving https://$APP on $MYIP:$HTTPS_PORT" || bad "nginx not serving - run ./edge/nginx-script.sh start" ;;
     mac3) start_backend A "$BACKEND_A_PORT"; fw_off
           if edge_ok "$MYIP"; then ok "standby edge already running"
-          elif [ -f "$HOME/cn-phase1/edge/nginx/certs/app.$PROJECT_DOMAIN.key" ]; then ./mac3-standby-edge.sh start >/dev/null 2>&1; edge_ok "$MYIP" && ok "standby edge started (for Ext E)" || bad "standby edge failed: ./mac3-standby-edge.sh start"
-          else bad "edge cert not imported (needed for Ext E): Mac 2 ./mac2-export-certs.sh -> AirDrop -> ./mac2-import-certs.sh <tgz>"; fi ;;
+          elif [ -f "$HOME/cn-phase1/edge/nginx/certs/app.$PROJECT_DOMAIN.key" ]; then ./edge/mac3-standby-edge.sh start >/dev/null 2>&1; edge_ok "$MYIP" && ok "standby edge started (for Ext E)" || bad "standby edge failed: ./edge/mac3-standby-edge.sh start"
+          else bad "edge cert not imported (needed for Ext E): Mac 2 ./edge/mac2-export-certs.sh -> AirDrop -> ./edge/mac2-import-certs.sh <tgz>"; fi ;;
     mac4) start_backend B "$BACKEND_B_PORT"; fw_off; dns_start; client_ready
           if [ -z "$PCAP" ]; then bad "no capture yet: ./demo.sh capture"
           elif [ "$(pcap_edge)" != "$MAC2_IP" ]; then bad "capture is from an old network (edge $(pcap_edge)) - recapture: ./demo.sh capture"
@@ -110,7 +110,7 @@ cmd_ready() {
 cmd_logs() {
   case $ROLE in
     mac1) say "Live DNS queries (dnsmasq)  - Ctrl+C to stop"; touch "$LOG/dns.log"; tail -n 5 -f "$LOG/dns.log" | grep --line-buffered -E "query|reply|config|forwarded|cached" ;;
-    mac2) say "Live edge log: client ip:port, TLS, request, status, which backend - Ctrl+C to stop"; ./nginx-script.sh logs ;;
+    mac2) say "Live edge log: client ip:port, TLS, request, status, which backend - Ctrl+C to stop"; ./edge/nginx-script.sh logs ;;
     mac3) say "Live Backend A log - Ctrl+C to stop"; touch "$LOG/backend-A.log"; tail -f "$LOG/backend-A.log" ;;
     mac4) say "Live Backend B log + backup DNS queries - Ctrl+C to stop"; touch "$LOG/backend-B.log"
           touch "$LOG/dns.log"; tail -n 5 -f "$LOG/backend-B.log" "$LOG/dns.log" | grep --line-buffered -vE "^$|compile time|started, version" ;;
@@ -121,8 +121,8 @@ cmd_cleanup() {
   is_client && { sudo ./dns/set-client-dns.sh restore >/dev/null 2>&1; flush; ok "client DNS back to automatic"; }
   case $ROLE in
     mac1) sudo pkill -x dnsmasq; ok "DNS stopped" ;;
-    mac2) ./nginx-script.sh stop ;;
-    mac3) fw_off; ./mac3-standby-edge.sh stop >/dev/null 2>&1; ok "standby edge stopped"; stop_backend "$BACKEND_A_PORT"; ok "Backend A stopped" ;;
+    mac2) ./edge/nginx-script.sh stop ;;
+    mac3) fw_off; ./edge/mac3-standby-edge.sh stop >/dev/null 2>&1; ok "standby edge stopped"; stop_backend "$BACKEND_A_PORT"; ok "Backend A stopped" ;;
     mac4) fw_off; sudo pkill -x dnsmasq; ok "backup DNS stopped"; stop_backend "$BACKEND_B_PORT"; ok "Backend B stopped" ;;
   esac
 }
@@ -288,7 +288,7 @@ step7() { title "7 - HTTP headers and caching (304)"
 }
 step8() { title "8 - Fail Backend A, service continues"
   case $ROLE in
-    mac4) say "  Live requests every second. Mac 3 will stop Backend A. Ctrl+C here when done."; ./mac2-ha-demo.sh watch ;;
+    mac4) say "  Live requests every second. Mac 3 will stop Backend A. Ctrl+C here when done."; ./edge/mac2-ha-demo.sh watch ;;
     mac3) pause "Stop Backend A now? (Mac 4 should be running './demo.sh 8' first)"
           stop_backend "$BACKEND_A_PORT"; up 127.0.0.1 "$BACKEND_A_PORT" && bad "still running" || ok "Backend A STOPPED"
           tell "Requests keep succeeding via B: nginx got 'connection refused', retried on B, and benched A for 10 s."
@@ -349,10 +349,10 @@ step9e() { title "9e - DNS-based edge cutover (Ext E)"
   case $ROLE in
     mac4) echo "  Leave this running. In ANOTHER tab on this Mac: ${B}./demo.sh dns standby${N}  (Mac 1 does the same)."
           echo "  Watch X-EDGE stay mac2-primary until the ${DNS_TTL}s TTL expires, then flip to mac3-standby."
-          echo "  To restore, both run: ${B}./demo.sh dns normal${N}.   Ctrl+C here when done."; pause "Start watching"; ./mac2-edge-watch.sh ;;
+          echo "  To restore, both run: ${B}./demo.sh dns normal${N}.   Ctrl+C here when done."; pause "Start watching"; ./edge/mac2-edge-watch.sh ;;
     mac1) echo "  When Mac 4 is watching:  ${B}./demo.sh dns standby${N}   ...then later:  ${B}./demo.sh dns normal${N}"
           tell "The DNS server changes instantly, but clients keep the cached answer for up to ${DNS_TTL}s. Keep the old edge running for one TTL - that's why you lower TTL before a migration." ;;
-    mac3) edge_ok "$MYIP" && ok "standby edge on this Mac is serving (X-Edge: mac3-standby)" || bad "standby not running: ./mac3-standby-edge.sh start" ;;
+    mac3) edge_ok "$MYIP" && ok "standby edge on this Mac is serving (X-Edge: mac3-standby)" || bad "standby not running: ./edge/mac3-standby-edge.sh start" ;;
     mac2) tell "Both edges serve during the switch, so no request fails. Faster failover would need a floating IP (VRRP) or a managed LB." ;;
   esac
 }
@@ -360,7 +360,7 @@ step10() { title "10 - Diagnose the injected fault"
   echo "  Order: DNS -> IP -> TCP -> TLS -> HTTP. Say each layer out loud."
   case $ROLE in
     mac4|mac1) ./troubleshoot/diagnose.sh ;;
-    mac2) edge_ok "$MYIP" && ok "nginx is serving HTTPS on $MYIP:$HTTPS_PORT" || bad "nginx NOT serving: ./nginx-script.sh start"
+    mac2) edge_ok "$MYIP" && ok "nginx is serving HTTPS on $MYIP:$HTTPS_PORT" || bad "nginx NOT serving: ./edge/nginx-script.sh start"
           show "tail -5 error.log"; tail -5 "$HOME/cn-phase1/edge/nginx/logs/error.log" | sed 's/^/  /'
           for t in "$MAC3_IP:$BACKEND_A_PORT" "$MAC4_IP:$BACKEND_B_PORT"; do up "${t%:*}" "${t#*:}" && ok "backend $t reachable" || bad "backend $t NOT reachable"; done ;;
     mac3) up 127.0.0.1 "$BACKEND_A_PORT" && ok "Backend A running" || bad "Backend A down: ./demo.sh ready"

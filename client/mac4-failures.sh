@@ -9,7 +9,7 @@
 # ============================================================
 
 set -e
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.."
 source ./config.env
 
 DOMAIN="app.$PROJECT_DOMAIN"
@@ -72,7 +72,7 @@ echo "  DNS restored to $MAC1_IP"
 # ── DEMO 3: One backend stopped (B stopped = only A responds) ─
 pause "DEMO 3: One backend stopped – ask MAC 4 (you) to stop Backend B on this machine"
 echo ""
-echo "  >>> Stop mac4-backend-b.sh now (Ctrl+C in Tab 1) <<<"
+echo "  >>> Stop backend/mac4-backend-b.sh now (Ctrl+C in Tab 1) <<<"
 read -r -p "  Press ENTER once Backend B is stopped... " _
 
 echo "--- DEMO 3: Backend B stopped (only A responds) ---" | tee "$OUT/03-one-backend-stopped.txt"
@@ -85,7 +85,7 @@ done
 echo "✓ Demo 3 saved to $OUT/03-one-backend-stopped.txt"
 
 echo ""
-echo "  >>> Restart Backend B now (run mac4-backend-b.sh in Tab 1) <<<"
+echo "  >>> Restart Backend B now (run backend/mac4-backend-b.sh in Tab 1) <<<"
 read -r -p "  Press ENTER once Backend B is running again... " _
 
 # ── DEMO 4: Both backends stopped → 502 ─────────────────────

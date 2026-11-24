@@ -1,16 +1,16 @@
 #!/bin/bash
 # STANDBY EDGE (Mac 3) - Ext E: install the edge certificate + key received from Mac 2.
 #
-#   ./mac2-import-certs.sh ~/Downloads/team1-edge-certs.tgz
+#   ./edge/mac2-import-certs.sh ~/Downloads/team1-edge-certs.tgz
 #
-# Then start the standby edge:   ./nginx-script.sh start standby
+# Then start the standby edge:   ./edge/nginx-script.sh start standby
 set -e
-source "$(dirname "$0")/config.env"
+source "$(dirname "$0")/../config.env"
 BUNDLE="${1:-$HOME/Downloads/team1-edge-certs.tgz}"
 C="$HOME/cn-phase1/edge/nginx/certs"
 LEAF="app.$PROJECT_DOMAIN"
 
-[ -f "$BUNDLE" ] || { echo "Bundle not found: $BUNDLE (AirDrop it from Mac 2: ./mac2-export-certs.sh)"; exit 1; }
+[ -f "$BUNDLE" ] || { echo "Bundle not found: $BUNDLE (AirDrop it from Mac 2: ./edge/mac2-export-certs.sh)"; exit 1; }
 command -v nginx >/dev/null || { echo "nginx not installed:  brew install nginx"; exit 1; }
 
 mkdir -p "$C"
@@ -26,4 +26,4 @@ openssl x509 -in "$C/$LEAF.crt" -noout -subject -enddate -ext subjectAltName
 echo
 echo "Installed in $C"
 echo "Delete the bundle now:  rm '$BUNDLE'"
-echo "Start the standby edge: ./nginx-script.sh start standby"
+echo "Start the standby edge: ./edge/nginx-script.sh start standby"

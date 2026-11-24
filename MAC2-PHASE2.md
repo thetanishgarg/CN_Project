@@ -1,29 +1,29 @@
 # Mac 2: Phase 2 (Ext D HA failover, Ext E edge cutover)
 
-Owner: Mac 2 (nginx edge). Files: `nginx-script.sh`, `mac2-*.sh`.
+Owner: Mac 2 (nginx edge). Files: `edge/nginx-script.sh`, `mac2-*.sh`.
 
 ## Files
 
 | File | Runs on | What it does |
 |---|---|---|
-| `nginx-script.sh start [primary\|standby]` | Mac 2, Mac 3 | Generates the nginx config from `config.env`. Detects the role from this Mac's IP, so the same config runs on both edges. Adds the headers `X-Edge: mac2-primary` / `mac3-standby` and `X-Upstream` |
-| `mac2-export-certs.sh` | Mac 2 | Bundles the cert, its private key and the CA cert into `~/Desktop/team1-edge-certs.tgz` for AirDrop. The CA's private key never leaves Mac 2 |
-| `mac2-import-certs.sh <tgz>` | Mac 3 | Installs the bundle, then checks that the cert is signed by our CA, valid for the names, and matches the key |
-| `mac2-ha-demo.sh demo` / `watch` | client (Mac 1 / Mac 4) | Ext D: guided failover demo, or one request per second on screen |
-| `mac2-edge-watch.sh` | client (Mac 1 / Mac 4) | Ext E: every 2 s shows what the DNS server says, what this Mac's cache uses, and which edge answered |
+| `edge/nginx-script.sh start [primary\|standby]` | Mac 2, Mac 3 | Generates the nginx config from `config.env`. Detects the role from this Mac's IP, so the same config runs on both edges. Adds the headers `X-Edge: mac2-primary` / `mac3-standby` and `X-Upstream` |
+| `edge/mac2-export-certs.sh` | Mac 2 | Bundles the cert, its private key and the CA cert into `~/Desktop/team1-edge-certs.tgz` for AirDrop. The CA's private key never leaves Mac 2 |
+| `edge/mac2-import-certs.sh <tgz>` | Mac 3 | Installs the bundle, then checks that the cert is signed by our CA, valid for the names, and matches the key |
+| `edge/mac2-ha-demo.sh demo` / `watch` | client (Mac 1 / Mac 4) | Ext D: guided failover demo, or one request per second on screen |
+| `edge/mac2-edge-watch.sh` | client (Mac 1 / Mac 4) | Ext E: every 2 s shows what the DNS server says, what this Mac's cache uses, and which edge answered |
 
 Private keys and `.tgz` bundles are in `.gitignore`. **Never commit them.**
 
 ## Ext D: HA failover (demo)
 
-1. Mac 2: `./nginx-script.sh start`, then in a second tab `./nginx-script.sh logs`.
-2. Client (Mac 4): `./mac2-ha-demo.sh demo` (it pauses and tells Mac 3 when to act).
+1. Mac 2: `./edge/nginx-script.sh start`, then in a second tab `./edge/nginx-script.sh logs`.
+2. Client (Mac 4): `./edge/mac2-ha-demo.sh demo` (it pauses and tells Mac 3 when to act).
    - Both backends up: A, B, A, B.
    - Mac 3 presses Ctrl+C on Backend A: **every request is still 200, all served by B**. The Mac 2 log shows `upstream=<A> , <B>` on the retried request.
    - Mac 3 restarts A, and after the 10 s `fail_timeout` the pattern goes back to A, B, A, B.
 3. Results are saved in `evidence/10-ha-failover/`.
 
-**How it works (config in `nginx-script.sh`):**
+**How it works (config in `edge/nginx-script.sh`):**
 - `max_fails=1 fail_timeout=10s`: one failed attempt marks a backend DOWN for 10 s. After that nginx tries it again with real traffic, and if it answers it's back in rotation. This is a **passive** health check: nginx learns from failures of real requests.
 - `proxy_next_upstream error timeout http_502 http_503` with `proxy_next_upstream_tries 2`: the request that hit the dead backend is **retried on the other one**, so the client never sees the error.
 - `proxy_connect_timeout 2s`: a stopped *process* gives "connection refused" (RST) and an instant retry. A *Mac that is off* gives no reply at all, so we give up after 2 s instead of the default 60 s.
@@ -50,10 +50,10 @@ Ways to remove it:
 ## Ext E: DNS-based edge cutover (demo)
 
 **Setup, once:**
-1. Mac 2: `./mac2-export-certs.sh`, then AirDrop `~/Desktop/team1-edge-certs.tgz` to Mac 3.
-2. Mac 3 runs `brew install nginx`, `git pull` and `./mac2-import-certs.sh ~/Downloads/team1-edge-certs.tgz`.
+1. Mac 2: `./edge/mac2-export-certs.sh`, then AirDrop `~/Desktop/team1-edge-certs.tgz` to Mac 3.
+2. Mac 3 runs `brew install nginx`, `git pull` and `./edge/mac2-import-certs.sh ~/Downloads/team1-edge-certs.tgz`.
 3. Delete the `.tgz` on both Macs.
-4. Mac 3: `./nginx-script.sh start standby`. It uses the same backends and the same cert. If Mac 3's firewall is on, it must allow `STANDBY_EDGE_IP` to reach 3001/3002.
+4. Mac 3: `./edge/nginx-script.sh start standby`. It uses the same backends and the same cert. If Mac 3's firewall is on, it must allow `STANDBY_EDGE_IP` to reach 3001/3002.
 5. Check from a client:
    ```bash
    curl -sI --resolve app.team1.test:443:<MAC3_IP> https://app.team1.test/api/status | grep -i x-edge
@@ -61,7 +61,7 @@ Ways to remove it:
    It should print `mac3-standby`.
 
 **Demo:**
-1. Client (Mac 4): `./mac2-edge-watch.sh`. Every row shows `mac2-primary`.
+1. Client (Mac 4): `./edge/mac2-edge-watch.sh`. Every row shows `mac2-primary`.
 2. Mac 1: `./dns/cutover-demo.sh cutover`, then `sudo ./dns/start-dns.sh --target <STANDBY_EDGE_IP>` on Mac 1 **and** Mac 4 (both DNS servers).
 3. Watch the columns:
    - **DNS SERVER SAYS** switches to Mac 3 immediately.

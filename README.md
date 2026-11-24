@@ -54,16 +54,16 @@ Addresses are not hard-coded in the scripts. Every script reads
 |---|---|---|
 | Task A | All Macs on one private LAN | `evidence/01-lan/` |
 | Task B | Private DNS for `team1.test` | `dns/start-dns.sh`, `dns/set-client-dns.sh` |
-| Task C | Two backend services | `backend.py` |
-| Task D | Load balancing at the edge | `nginx-script.sh` |
-| Task E | HTTPS with our own CA | `mac2-certs.sh`, `mac4-client-setup.sh` |
-| Task F | HTTP caching (`Cache-Control`, `ETag`, `304`) | `backend.py` |
-| Task G | Packet capture of DNS, TCP and TLS | `mac4-task-g-capture.sh`, `demo.sh capture` |
-| Ext A | Backup DNS on Mac 4 | `mac4-backup-dns.sh`, `dns/backup-dns-demo.sh` |
+| Task C | Two backend services | `backend/backend.py` |
+| Task D | Load balancing at the edge | `edge/nginx-script.sh` |
+| Task E | HTTPS with our own CA | `edge/mac2-certs.sh`, `client/mac4-client-setup.sh` |
+| Task F | HTTP caching (`Cache-Control`, `ETag`, `304`) | `backend/backend.py` |
+| Task G | Packet capture of DNS, TCP and TLS | `client/mac4-task-g-capture.sh`, `demo.sh capture` |
+| Ext A | Backup DNS on Mac 4 | `dns/mac4-backup-dns.sh`, `dns/backup-dns-demo.sh` |
 | Ext B | 30 s TTL and resolver caching | `dns/ttl-demo.sh` |
-| Ext C | Backend isolation with the macOS packet filter | `firewall/backend-firewall.sh`, `mac4-ext-c-firewall.sh` |
-| Ext D | Backend failover without client errors | `nginx-script.sh`, `mac2-ha-demo.sh` |
-| Ext E | Standby edge and DNS cutover | `mac3-standby-edge.sh`, `dns/cutover-demo.sh`, `mac2-edge-watch.sh` |
+| Ext C | Backend isolation with the macOS packet filter | `firewall/backend-firewall.sh`, `firewall/mac4-ext-c-firewall.sh` |
+| Ext D | Backend failover without client errors | `edge/nginx-script.sh`, `edge/mac2-ha-demo.sh` |
+| Ext E | Standby edge and DNS cutover | `edge/mac3-standby-edge.sh`, `dns/cutover-demo.sh`, `edge/mac2-edge-watch.sh` |
 | Ext F | Layer-by-layer fault diagnosis | `troubleshoot/diagnose.sh`, `troubleshoot/RUNBOOK.md` |
 
 ## Getting started
@@ -89,8 +89,8 @@ cd CN_Project
 4. **Run the demonstration** step by step (`./demo.sh 1` to `./demo.sh 10`, plus `9a`, `9b`, `9c`, `9e` for Phase 2). Each step pauses where another Mac has to act and prints what to say.
 5. **Clean up** afterwards with `./demo.sh cleanup`.
 
-Certificates: `./mac2-certs.sh` on Mac 2 creates the CA and the server
-certificate. Clients trust the CA once with `./mac4-client-setup.sh team1-ca.crt`.
+Certificates: `./edge/mac2-certs.sh` on Mac 2 creates the CA and the server
+certificate. Clients trust the CA once with `./client/mac4-client-setup.sh team1-ca.crt`.
 The CA's private key never leaves Mac 2 and private keys are git-ignored.
 
 ## Testing
@@ -135,12 +135,12 @@ and explains how to rebuild the document with `evidence/build/build.sh`.
 
 ```
 config.env              addresses, ports and TTL shared by every script
-backend.py              the backend service (run twice: A on 3001, B on 3002)
-nginx-script.sh         generates and runs the nginx edge (primary or standby)
+backend/backend.py              the backend service (run twice: A on 3001, B on 3002)
+edge/nginx-script.sh         generates and runs the nginx edge (primary or standby)
 demo.sh                 one entry point for all four Macs
 setup.sh                Phase 1 per-Mac setup
 mac2-*.sh               Mac 2: certificates, HA demo, edge watcher
-mac3-standby-edge.sh    Mac 3: standby edge
+edge/mac3-standby-edge.sh    Mac 3: standby edge
 mac4-*.sh               Mac 4: backend B, backup DNS, client setup, firewall, capture
 dns/                    dnsmasq generation, client DNS, TTL, backup and cutover demos
 firewall/               pf anchor for backend isolation
