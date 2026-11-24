@@ -155,9 +155,9 @@ team1-ca.crt            the team CA certificate (public; clients must trust it)
 
 | File | Contents |
 |---|---|
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Topology, request flows, protocol layers, viva guide |
-| [DEMO-SCRIPT.md](DEMO-SCRIPT.md) | The 11 demonstration steps with commands |
-| [MAC2-PHASE2.md](MAC2-PHASE2.md) | Ext D and Ext E: how failover and cutover work |
-| [PHASE2-REPORT.md](PHASE2-REPORT.md) | Phase 2 results and learning summaries |
-| [REVISION-NOTES.html](REVISION-NOTES.html) | Revision notes for the viva |
+| [docs/architecture.md](docs/architecture.md) | Topology, request flows, protocol layers, viva guide |
+| [docs/demo-script.md](docs/demo-script.md) | The 11 demonstration steps with commands |
+| [docs/edge-failover-and-cutover.md](docs/edge-failover-and-cutover.md) | Ext D and Ext E: how failover and cutover work |
+| [docs/phase2-report.md](docs/phase2-report.md) | Phase 2 results and learning summaries |
+| [docs/revision-notes.html](docs/revision-notes.html) | Revision notes for the viva |
 | [report/report.pdf](report/report.pdf) | Final report |

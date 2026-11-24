@@ -73,7 +73,7 @@ Ways to remove it:
 
 **Why keep the old edge running during the switch:** clients with cached answers keep arriving for one TTL. Only stop the old edge after the TTL has passed (the "drain"). In production you lower the TTL *days before* a migration, because the old long TTL is already cached everywhere.
 
-## Learning summaries (for PHASE2-REPORT.md)
+## Learning summaries (for phase2-report.md)
 
 **Extension D: High-availability failover.** We configured nginx on Mac 2 to detect an unhealthy backend from real traffic and route around it. With `max_fails=1 fail_timeout=10s` a backend that refuses or times out once is taken out of the pool for 10 seconds. With `proxy_next_upstream` the request that failed is retried on the healthy backend, so the client never sees an error. When we stopped Backend A, every request kept returning 200 from Backend B. When A was restarted, nginx put it back automatically after the timeout, and round-robin resumed with no configuration change. We learned the difference between a refused connection (process down, instant RST, instant failover) and a silent host (machine off, must wait for the connect timeout, which we cut to 2 s), and between nginx's passive health checks and the active probes used by AWS ALB target groups. Ext D also made the next weakness obvious: the backends are now redundant, but the edge itself is a single point of failure.
 

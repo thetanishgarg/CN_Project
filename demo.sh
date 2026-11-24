@@ -195,7 +195,7 @@ step1() { title "1 - Topology and IP / service inventory"
   echo "  Flow: client -> DNS (Mac 1, backup Mac 4) -> HTTPS to Mac 2 (nginx) -> Backend A (Mac 3) or B (Mac 4)"
   echo "  Cloud: DNS = Route 53 | nginx = AWS ALB | backends = EC2 target group | firewall = security group"
   echo; ok "this Mac: $NAME"
-  [ "$ROLE" = mac1 ] && { open ARCHITECTURE.md 2>/dev/null; tell "Point at the diagram: clients only ever talk to Mac 2; DNS just gives them Mac 2's IP."; }
+  [ "$ROLE" = mac1 ] && { open docs/architecture.md 2>/dev/null; tell "Point at the diagram: clients only ever talk to Mac 2; DNS just gives them Mac 2's IP."; }
 }
 step2() { title "2 - All machines on the private LAN"
   show "ipconfig getifaddr $IFACE"; echo "  this Mac ($ROLE): $MYIP   mask $(ipconfig getoption "$IFACE" subnet_mask)   gateway $(route -n get default | awk '/gateway:/{print $2}')"
@@ -373,6 +373,6 @@ case "${1:-}" in
   ready) cmd_ready ;; logs) cmd_logs ;; cleanup) cmd_cleanup ;; dns) cmd_dns "${2:-}" ;;
   capture) cmd_capture ;; check) cmd_check ;;
   1|2|3|4|5|6|7|8|9|10) "step$1" ;; 9a|9b|9c|9e) "step$1" ;;
-  11) title "11 - Individual viva"; echo "  Answer from understanding. Revise: MAC2-PHASE2.md, troubleshoot/RUNBOOK.md, PHASE2-REPORT.md" ;;
+  11) title "11 - Individual viva"; echo "  Answer from understanding. Revise: docs/edge-failover-and-cutover.md, troubleshoot/RUNBOOK.md, docs/phase2-report.md" ;;
   *) sed -n '2,17p' "$0"; echo; echo "  This Mac: $NAME ($MYIP)" ;;
 esac

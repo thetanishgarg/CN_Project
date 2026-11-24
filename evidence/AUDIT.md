@@ -28,10 +28,10 @@ Removed files are still in git history (`git show <commit>^:<path>`).
 | `/` serves an HTML page | `report.tex`, Task C | `backend/backend.py` returns JSON |
 | `Cache-Control: public, max-age=60` | `report.tex`, Task F | `max-age=60`, no `public` |
 | Upstream keepalive was removed | `report.tex`, Task D and challenges | No version of `edge/nginx-script.sh` in git contains it |
-| Ext D is caching; `10-ha-failover` is Ext E | `PHASE2-REPORT.md` | Ext D is backend failover and `10-ha-failover` is its folder; `12-edge-cutover` is Ext E |
-| pf anchor `team1-backend` | `PHASE2-REPORT.md`, `RUNBOOK.md` | It is `com.apple/team1-backend`; the runbook's `pfctl -a team1-backend -sr` shows nothing |
+| Ext D is caching; `10-ha-failover` is Ext E | `docs/phase2-report.md` | Ext D is backend failover and `10-ha-failover` is its folder; `12-edge-cutover` is Ext E |
+| pf anchor `team1-backend` | `docs/phase2-report.md`, `RUNBOOK.md` | It is `com.apple/team1-backend`; the runbook's `pfctl -a team1-backend -sr` shows nothing |
 | A blocked edge gets "Connection refused" | `RUNBOOK.md` fault 9 | The rule is `block drop`, so it times out |
-| Learning summaries | `PHASE2-REPORT.md` | Still placeholders |
+| Learning summaries | `docs/phase2-report.md` | Still placeholders |
 | Every request returned 200 during cutover | `report.tex` | True for the cutover window (84 of 84). The full file also has 197 failures from the later outage; expect the question |
 
 ## Technical findings

@@ -45,7 +45,7 @@ demo)
   burst 6
   echo
   echo "RESULT: the client saw no errors while a backend died; recovery needed no config change."
-  echo "STILL A SINGLE POINT OF FAILURE: the edge itself (Mac 2). See MAC2-PHASE2.md."
+  echo "STILL A SINGLE POINT OF FAILURE: the edge itself (Mac 2). See docs/edge-failover-and-cutover.md."
   echo; echo "(saved to $LOG)" ;;
 *) sed -n '2,8p' "$0" ;;
 esac

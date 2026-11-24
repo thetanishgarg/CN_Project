@@ -8,7 +8,7 @@
 # SEQUENCE
 #   1. Mac 3: Backend A running (BACKEND_NAME=A BACKEND_PORT=3001 python3 backend/backend.py)
 #   2. Run this script step by step, following the prompts
-#   3. The script saves timestamped .txt files for PHASE2-REPORT.md
+#   3. The script saves timestamped .txt files for docs/phase2-report.md
 # =============================================================================
 set -euo pipefail
 cd "$(dirname "$0")/../.."

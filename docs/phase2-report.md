@@ -40,7 +40,7 @@
 **macOS DNS note:**  
 `scutil --dns` shows macOS lists multiple resolvers and **rotates / parallelises** queries. When Mac 1 stops responding, the OS retries on Mac 4 within the timeout window. This is not true round-robin — Mac 1 is still tried first if reachable.
 
-**Learning summary:** see [ARCHITECTURE.md](ARCHITECTURE.md), section 7, Extension A.
+**Learning summary:** see [architecture.md](architecture.md), section 7, Extension A.
 
 ---
 
@@ -52,7 +52,7 @@
 
 **Evidence:** `evidence/09-ttl/ttl-local.txt` (server side) and `evidence/12-edge-cutover/` (the client's cache holding the old answer for 29 s).
 
-**Learning summary:** see [ARCHITECTURE.md](ARCHITECTURE.md), section 7, Extension B.
+**Learning summary:** see [architecture.md](architecture.md), section 7, Extension B.
 
 ---
 
@@ -69,7 +69,7 @@
 
 **Evidence:** `evidence/11-service-isolation/`
 
-**Learning summary:** see [evidence/11-service-isolation/ext-c-learning-summary.md](evidence/11-service-isolation/ext-c-learning-summary.md).
+**Learning summary:** see [evidence/11-service-isolation/ext-c-learning-summary.md](../evidence/11-service-isolation/ext-c-learning-summary.md).
 
 ---
 
@@ -79,7 +79,7 @@
 
 **Result:** 20 of 20 requests returned 200 while Backend A was stopped and restarted (`evidence/10-ha-failover/ha-failover-120858.txt`).
 
-**Learning summary:** see [MAC2-PHASE2.md](MAC2-PHASE2.md).
+**Learning summary:** see [edge-failover-and-cutover.md](edge-failover-and-cutover.md).
 
 ### Task F — Caching (carried over from Phase 1)
 
@@ -98,7 +98,7 @@
 
 **Evidence:** `evidence/12-edge-cutover/` (summary in `cutover-transitions.txt`)
 
-**Learning summary:** see [MAC2-PHASE2.md](MAC2-PHASE2.md).
+**Learning summary:** see [edge-failover-and-cutover.md](edge-failover-and-cutover.md).
 
 ---
 
@@ -157,9 +157,9 @@ The 5-layer model maps perfectly to real failures:
 
 | Extension | Owner | Summary |
 |-----------|-------|---------|
-| Ext A – Backup DNS | Mac 1 + Mac 4 | [ARCHITECTURE.md §7](ARCHITECTURE.md) |
-| Ext B – Short TTL | Mac 1 | [ARCHITECTURE.md §7](ARCHITECTURE.md) |
-| Ext C – Firewall | Mac 3 + Mac 4 | [ext-c-learning-summary.md](evidence/11-service-isolation/ext-c-learning-summary.md) |
-| Ext D – Backend failover | Mac 2 | [MAC2-PHASE2.md](MAC2-PHASE2.md) |
-| Ext E – Standby Edge | Mac 2 + Mac 3 | [MAC2-PHASE2.md](MAC2-PHASE2.md) |
+| Ext A – Backup DNS | Mac 1 + Mac 4 | [architecture.md §7](architecture.md) |
+| Ext B – Short TTL | Mac 1 | [architecture.md §7](architecture.md) |
+| Ext C – Firewall | Mac 3 + Mac 4 | [ext-c-learning-summary.md](../evidence/11-service-isolation/ext-c-learning-summary.md) |
+| Ext D – Backend failover | Mac 2 | [edge-failover-and-cutover.md](edge-failover-and-cutover.md) |
+| Ext E – Standby Edge | Mac 2 + Mac 3 | [edge-failover-and-cutover.md](edge-failover-and-cutover.md) |
 | Ext F – Fault Diagnosis | Mac 4 | _[pending]_ |

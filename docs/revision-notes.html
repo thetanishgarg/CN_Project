@@ -166,7 +166,7 @@ html { scroll-behavior: smooth; }
   <p class="sub">The PDF's fixed order. Run <code>./demo.sh N</code> on the Mac shown. The script pauses where the next person acts and prints a "SAY" line.</p>
 
   <div class="step"><div class="step-head"><span class="step-no">1</span><h3>Topology and IP / service inventory</h3><span class="who">Mac 1 presents · ./demo.sh 1</span></div>
-    <p class="see">Opens ARCHITECTURE.md and prints the IP/service table.</p>
+    <p class="see">Opens architecture.md and prints the IP/service table.</p>
     <div class="say">Four Macs on one private LAN. Mac 1 is our DNS, like Route 53. Mac 2 is the edge: it ends TLS and load-balances, like an ALB. Mac 3 and Mac 4 are two copies of the same app. Clients only ever talk to Mac 2.</div></div>
 
   <div class="step"><div class="step-head"><span class="step-no">2</span><h3>All machines on the private LAN</h3><span class="who">every Mac · ./demo.sh 2</span></div>

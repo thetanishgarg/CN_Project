@@ -293,7 +293,7 @@ A fundamental network engineering distinction:
 
 ---
 
-## 7. Extension Learning Summaries (For Mac 4 / `PHASE2-REPORT.md`)
+## 7. Extension Learning Summaries (For Mac 4 / `phase2-report.md`)
 
 ### Extension A: Backup DNS Failover Learning Summary
 > Implementing dual-resolver high availability highlighted the critical distinction between resolver redundancy and client caching dynamics. While having a secondary nameserver on Mac 4 eliminated DNS as a single point of failure (SPOF), testing demonstrated that client failover latency depends directly on the OS resolver implementation: macOS `mDNSResponder` dynamically tracks server health and routes queries across configured servers rather than relying on strict sequential timeouts. Most importantly, the extension proved that a DNS failure manifests as a complete inability to resolve hostnames (Layer 7 resolution failure) before any TCP connection can be attempted, whereas an application or load balancer outage allows successful name resolution but fails during TCP handshaking (`Connection refused`) or HTTP processing (`502 Bad Gateway`).
