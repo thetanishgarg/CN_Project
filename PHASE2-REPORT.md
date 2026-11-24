@@ -1,8 +1,8 @@
 # PHASE 2 REPORT — Computer Networks Project
 ## Team 1 | Mac 4 (Integration Owner / Test Client / Backup DNS)
 
-> **Status:** In progress — teammate learning summaries to be pasted into each Extension section below.  
-> **Evidence index:** see `evidence/` — each numbered folder maps to one extension.
+> **Status:** Extensions A to F are implemented. Learning summaries are kept next to the work they describe and linked from §5; the Ext F summary and a timed fault drill are still to be written and recorded.  
+> **Evidence:** start with `evidence/EVIDENCE.pdf`; `evidence/README.md` maps each numbered folder to its requirement.
 
 ---
 
@@ -29,17 +29,18 @@
 - Ran Mac 1's `dns/start-dns.sh` unchanged — same script, same records, generated from `config.env`.
 - Configured client DNS with **both servers** (Mac 1 first, Mac 4 second) using `dns/set-client-dns.sh set`.
 
-**Failover demo result:**
-- Mac 1 stopped dnsmasq → client flushed cache → `dig app.team1.test` returned `10.202.54.225` answered by **Mac 4** (`10.202.54.68`).
-- Verified with: `dig app.team1.test` → `;; SERVER: 10.202.54.68#53`.
+**What the saved files show:**
+- Both servers return the same record and TTL (`evidence/08-backup-dns/backup-dns-recorded.txt`).
+- Mac 4's dnsmasq log shows it answering real queries (`backup-dns-log-excerpt.txt`).
+- With the primary process killed, the backup still answers (`backup-dns-local.txt`, a one-Mac run).
+- Not yet recorded: a raw `dig` on the LAN with Mac 1 stopped, showing `;; SERVER:` as Mac 4. Run `evidence/build/capture-lan.sh failover`.
 
 **Evidence:** `evidence/08-backup-dns/`
 
 **macOS DNS note:**  
 `scutil --dns` shows macOS lists multiple resolvers and **rotates / parallelises** queries. When Mac 1 stops responding, the OS retries on Mac 4 within the timeout window. This is not true round-robin — Mac 1 is still tried first if reachable.
 
-**Learning summary (paste teammate's paragraph here):**
-> _[To be added by Mac 1 — DNS redundancy learnings]_
+**Learning summary:** see [ARCHITECTURE.md](ARCHITECTURE.md), section 7, Extension A.
 
 ---
 
@@ -49,10 +50,9 @@
 - `DNS_TTL=30` in `config.env`; `start-dns.sh` injects this into dnsmasq `local-ttl`.
 - Demonstrated cache expiry: queried `app.team1.test`, waited 30 s, then showed stale entry gone.
 
-**Evidence:** `evidence/09-ttl/`
+**Evidence:** `evidence/09-ttl/ttl-local.txt` (server side) and `evidence/12-edge-cutover/` (the client's cache holding the old answer for 29 s).
 
-**Learning summary:**
-> _[To be added]_
+**Learning summary:** see [ARCHITECTURE.md](ARCHITECTURE.md), section 7, Extension B.
 
 ---
 
@@ -61,23 +61,30 @@
 **What was done:**
 - Applied `firewall/backend-firewall.sh` (Mac 3's script) on Mac 4 for port 3002.
 - Used `mac4-ext-c-firewall.sh apply` → delegates without editing the shared script.
-- Verified: Mac 2 (`10.202.54.225`) can reach `:3002`; any other host gets silent DROP.
+- Verified: the edge (Mac 2) can reach `:3002`; any other host gets a silent drop, so its connection times out (`evidence/11-service-isolation/isolation-recorded.txt`).
 - Removed firewall after demo: `sudo ./mac4-ext-c-firewall.sh remove`.
 
-**pf anchor used:** `team1-backend`  
+**pf anchor used:** `com.apple/team1-backend` (macOS only evaluates anchors under `com.apple/`)  
 **Rules:** allow from MAC2_IP, allow from STANDBY_EDGE_IP, block drop all others.
 
 **Evidence:** `evidence/11-service-isolation/`
 
-**Learning summary (paste teammate's paragraph here):**
-> _[To be added — see evidence/11-service-isolation/ext-c-learning-summary.md]_
+**Learning summary:** see [evidence/11-service-isolation/ext-c-learning-summary.md](evidence/11-service-isolation/ext-c-learning-summary.md).
 
 ---
 
-### Ext D — Caching (Phase 1 Carry-over, verified in Phase 2)
+### Ext D — Backend high-availability failover (Mac 2)
+
+**What was done:** nginx passive health check (`max_fails=1 fail_timeout=10s`) plus `proxy_next_upstream`, so a request that reaches a stopped backend is retried on the other one.
+
+**Result:** 20 of 20 requests returned 200 while Backend A was stopped and restarted (`evidence/10-ha-failover/ha-failover-120858.txt`).
+
+**Learning summary:** see [MAC2-PHASE2.md](MAC2-PHASE2.md).
+
+### Task F — Caching (carried over from Phase 1)
 
 **Evidence:** `evidence/06-caching/`  
-**Result:** ETag identical on A and B, `304 Not Modified` on conditional GET — unchanged from Phase 1.
+**Result:** the ETag is identical on A and B and conditional requests get `304 Not Modified`, both through the edge and directly.
 
 ---
 
@@ -87,12 +94,11 @@
 - Mac 3 ran `mac3-standby-edge.sh` to bring up a second nginx instance.
 - Mac 1 updated `APP_TARGET_IP` → `MAC3_IP` and restarted DNS (TTL=30s, so switch propagated in ≤30 s).
 - Clients now reach Mac 3's nginx (same certs, same backends).
-- Cutover verified: `dig app.team1.test` returned `10.81.95.70`.
+- Cutover verified on 23 Nov: the DNS server changed at 12:12:40, the client's cache followed at 12:13:09 (29 s), and 84 of 84 samples in that window returned 200.
 
-**Evidence:** `evidence/10-ha-failover/`
+**Evidence:** `evidence/12-edge-cutover/` (summary in `cutover-transitions.txt`)
 
-**Learning summary (paste teammate's paragraph here):**
-> _[To be added by Mac 2 / Mac 3]_
+**Learning summary:** see [MAC2-PHASE2.md](MAC2-PHASE2.md).
 
 ---
 
@@ -103,8 +109,7 @@
 - Built `troubleshoot/RUNBOOK.md` — fault table with 12 injected faults, symptoms, proof commands, fixes.
 - Ran mock drill: teammate secretly broke one thing → ran `diagnose.sh` → stopped at correct layer → named cause + fix.
 
-**Drill result:**  
-_[Describe which fault was injected and how quickly it was identified]_
+**Drill result:** no timed drill is saved yet (`evidence/build/capture-lan.sh drill` records one). `evidence/13-troubleshooting/incident-20261123.txt` reconstructs a real outage on 23 Nov from three independent logs, and `diagnose-no-lan.txt` shows the tool stopping at layer 1.
 
 **Evidence:** `evidence/13-troubleshooting/`
 
@@ -130,31 +135,31 @@ The 5-layer model maps perfectly to real failures:
 
 | Folder | Extension | Contents |
 |--------|-----------|---------|
-| `evidence/01-lan/` | LAN setup | ifconfig, ping matrix |
+| `evidence/01-lan/` | LAN setup | interface facts and pings from Mac 2 and Mac 4 |
 | `evidence/02-dns/` | Phase 1 DNS | dig proofs, failure demos |
-| `evidence/03-https/` | Phase 1 HTTPS | curl -v, cert details |
+| `evidence/03-https/` | Phase 1 HTTPS | certificate taken from the capture and verified |
 | `evidence/04-load-balancing/` | Load balancing | X-Backend alternating log |
-| `evidence/05-wireshark/` | Packet capture | full-flow.pcap + screenshots |
+| `evidence/05-wireshark/` | Packet capture | full-flow.pcap, filtered capture, decoded packets |
 | `evidence/06-caching/` | Caching (Ext D) | ETag + 304 responses |
-| `evidence/07-failures/` | Phase 1 failures | 5 failure demo text files |
-| `evidence/08-backup-dns/` | **Ext A** | Failover demo output, dig SERVER= proof |
-| `evidence/09-ttl/` | **Ext B** | TTL=30s demo, cache expiry timing |
-| `evidence/10-ha-failover/` | **Ext E** | Edge cutover dig output, nginx logs |
-| `evidence/11-service-isolation/` | **Ext C** | pf rules, blocked/allowed connection proofs |
-| `evidence/12-edge-cutover/` | **Ext E** | DNS switch timing, curl before/after |
-| `evidence/13-troubleshooting/` | **Ext F** | diagnose.sh output, mock drill recording |
+| `evidence/07-failures/` | Phase 1 failures | recorded failure checks and raw error signatures |
+| `evidence/08-backup-dns/` | **Ext A** | both servers' answers, backup DNS log excerpt |
+| `evidence/09-ttl/` | **Ext B** | server-side TTL change (client side is in 12) |
+| `evidence/10-ha-failover/` | **Ext D** | backend failover recording |
+| `evidence/11-service-isolation/` | **Ext C** | blocked and allowed connection proofs |
+| `evidence/12-edge-cutover/` | **Ext E** | DNS switch timing from the client watcher |
+| `evidence/13-troubleshooting/` | **Ext F** | diagnose.sh output, 23 Nov outage reconstruction |
 
 ---
 
 ## 5. Learning Summaries
 
-> **Instructions for teammates:** Send your one-paragraph summary to Mac 4 to be pasted here.
+> Each summary lives next to the work it describes; this table links to it.
 
 | Extension | Owner | Summary |
 |-----------|-------|---------|
-| Ext A – Backup DNS | Mac 1 + Mac 4 | _[pending]_ |
-| Ext B – Short TTL | Mac 1 | _[pending]_ |
-| Ext C – Firewall | Mac 3 + Mac 4 | _[pending — draft in evidence/11-service-isolation/ext-c-learning-summary.md]_ |
-| Ext D – Caching | Mac 3 | _[pending]_ |
-| Ext E – Standby Edge | Mac 2 + Mac 3 | _[pending]_ |
+| Ext A – Backup DNS | Mac 1 + Mac 4 | [ARCHITECTURE.md §7](ARCHITECTURE.md) |
+| Ext B – Short TTL | Mac 1 | [ARCHITECTURE.md §7](ARCHITECTURE.md) |
+| Ext C – Firewall | Mac 3 + Mac 4 | [ext-c-learning-summary.md](evidence/11-service-isolation/ext-c-learning-summary.md) |
+| Ext D – Backend failover | Mac 2 | [MAC2-PHASE2.md](MAC2-PHASE2.md) |
+| Ext E – Standby Edge | Mac 2 + Mac 3 | [MAC2-PHASE2.md](MAC2-PHASE2.md) |
 | Ext F – Fault Diagnosis | Mac 4 | _[pending]_ |
