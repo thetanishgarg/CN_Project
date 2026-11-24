@@ -2,7 +2,8 @@
 ## 11 Steps | Exact Commands | Presenter per Step
 
 > **IPs:** Mac 1 (DNS) `10.202.54.224` · Mac 2 (nginx/edge) `10.202.54.225` · Mac 3 (Backend A + Standby Edge) `10.202.54.70` · Mac 4 (Backend B + Backup DNS + Test Client) `10.202.54.68`  
-> **Domain:** `app.team1.test` · **CA:** `team1-ca.crt`
+> **Domain:** `app.team1.test` · **CA:** `team1-ca.crt`  
+> The addresses above are from the 22 Nov network. Use the values in `config.env`; `./demo.sh` reads them for you and runs this Mac's part of each step.
 
 ---
 

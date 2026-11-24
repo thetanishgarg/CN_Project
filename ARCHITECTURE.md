@@ -1,5 +1,7 @@
 # 🏗️ ARCHITECTURE — Computer Networks Phase 1 & Phase 2
 
+> **About the addresses.** The IPs drawn and tabulated here come from two earlier sessions (`10.202.54.x` and `10.81.95.x`). The addresses actually in use are always the ones in `config.env`; the structure and ports are the same.
+
 > **High-Availability Campus Network Simulation**  
 > Private Dual DNS (dnsmasq) + Active-Passive HTTPS Edge (nginx) + Dual Backend (Python) + Host Firewall Isolation (pf)
 
